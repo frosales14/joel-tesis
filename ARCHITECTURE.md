@@ -9,34 +9,22 @@ This project follows a **feature-based architecture** that promotes clean code p
 ```
 src/
 ├── features/                    # Feature-based modules
-│   ├── auth/                   # Authentication feature
-│   │   ├── components/         # Auth-specific components
-│   │   ├── hooks/             # Auth-specific hooks (useAuth)
-│   │   ├── pages/             # Auth pages (Login, Register)
-│   │   ├── services/          # Auth API services
-│   │   ├── types/             # Auth TypeScript interfaces
-│   │   ├── utils/             # Auth utility functions
-│   │   └── index.ts           # Feature exports
-│   │
-│   ├── home/                  # Home feature
-│   │   ├── components/        # Home-specific components
-│   │   ├── hooks/             # Home-specific hooks
-│   │   ├── pages/             # Home page
-│   │   ├── services/          # Home API services
-│   │   ├── types/             # Home TypeScript interfaces
-│   │   ├── utils/             # Home utility functions
-│   │   └── index.ts           # Feature exports
-│   │
-│   ├── about/                 # About feature
-│   └── contact/               # Contact feature
+│   └── auth/                   # Authentication feature
+│       ├── components/         # Auth-specific components
+│       ├── hooks/             # Auth-specific hooks (useAuth)
+│       ├── pages/             # Auth pages (Login, Register)
+│       ├── services/          # Auth API services (authService)
+│       ├── types/             # Auth TypeScript interfaces
+│       ├── utils/             # Auth utility functions
+│       └── index.ts           # Feature exports
 │
 ├── shared/                     # Shared across features
-│   ├── components/            # Reusable UI components
+│   ├── components/            # Reusable UI components (LandingPage, NotFound)
 │   ├── hooks/                 # Shared custom hooks
 │   ├── services/              # Global API services
 │   ├── types/                 # Global TypeScript interfaces
 │   ├── utils/                 # Utility functions
-│   ├── constants/             # App constants
+│   ├── constants/             # App constants (routes)
 │   └── index.ts               # Shared exports
 │
 ├── assets/                    # Static assets
@@ -57,9 +45,8 @@ src/
 ### 2. **Clean Import Structure**
 ```typescript
 // Feature exports
-import { HomePage } from './features/home'
 import { LoginPage, RegisterPage } from './features/auth'
-import { NotFound } from './shared'
+import { LandingPage, NotFound } from './shared'
 ```
 
 ### 3. **Separation of Concerns**

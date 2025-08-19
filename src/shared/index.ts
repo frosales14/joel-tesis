@@ -1,5 +1,6 @@
 // Shared components
 export { default as NotFound } from './components/NotFound';
+export { default as LandingPage } from './components/LandingPage';
 
 // Shared types (when available)
 // export type { ApiResponse, User, BaseEntity } from './types';
@@ -11,4 +12,4 @@ export { default as NotFound } from './components/NotFound';
 // export { formatDate, validateEmail } from './utils';
 
 // Shared constants (when available)
-// export { API_ENDPOINTS, ROUTES } from './constants';
+// export { ROUTES } from './constants/routes';
