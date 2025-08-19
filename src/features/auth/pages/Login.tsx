@@ -4,8 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import logoImg from '@/assets/san-logo.png';
 
@@ -45,36 +44,43 @@ function Login() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-neutral-off-white to-warm-peach-100 flex items-center justify-center p-8">
-            <div className="max-w-md w-full">
-                <Card className="shadow-large">
-                    <CardHeader className="text-center space-y-6">
+        <div className="min-h-screen bg-gradient-to-br from-neutral-off-white via-warm-peach-50 to-pale-sky-yellow-100 flex items-center justify-center p-4 md:p-8">
+            {/* Background decoration */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute top-20 left-20 w-32 h-32 bg-soft-blue-200 rounded-full opacity-20 blur-xl"></div>
+                <div className="absolute bottom-20 right-20 w-40 h-40 bg-warm-peach-200 rounded-full opacity-30 blur-xl"></div>
+                <div className="absolute top-1/2 left-1/4 w-24 h-24 bg-muted-sage-green-200 rounded-full opacity-25 blur-xl"></div>
+            </div>
+
+            <div className="max-w-md w-full relative z-10">
+                <Card className="shadow-large border-0 bg-white backdrop-blur-sm">
+                    <CardHeader className="text-center space-y-6 pb-6">
                         <div className="flex justify-center">
-                            <img
-                                src={logoImg}
-                                alt="Sociedad Amigos de los Niños"
-                                className="h-16 object-contain"
-                            />
+                            <div className="relative">
+                                <div className="absolute inset-0 bg-soft-blue-100 rounded-2xl blur-lg opacity-50"></div>
+                                <img
+                                    src={logoImg}
+                                    alt="Sociedad Amigos de los Niños"
+                                    className="relative h-20 object-contain bg-chart-1/80 rounded-xl p-3 shadow-medium"
+                                />
+                            </div>
                         </div>
-                        <div>
-                            <CardTitle className="text-2xl text-soft-blue mb-2">
-                                Welcome Back! 👋
-                            </CardTitle>
-                            <CardDescription className="text-gentle-slate-gray">
-                                Sign in to your account to continue
+                        <div className="space-y-3">
+                            <CardDescription className=" text-base">
+                                Inicia sesión en tu cuenta para continuar tu viaje
                             </CardDescription>
                         </div>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="space-y-6">
                         {error && (
-                            <Alert variant="destructive" className="mb-6">
-                                <AlertDescription>{error}</AlertDescription>
+                            <Alert variant="destructive" className="mb-6 border-soft-coral bg-soft-coral-50">
+                                <AlertDescription className="text-soft-coral-700">{error}</AlertDescription>
                             </Alert>
                         )}
 
                         <form onSubmit={handleSubmit} className="space-y-6">
-                            <div className="space-y-2">
-                                <Label htmlFor="email">Email Address</Label>
+                            <div className="space-y-3">
+                                <Label htmlFor="email" className="text-gentle-slate-gray font-medium">Correo Electronico</Label>
                                 <Input
                                     id="email"
                                     name="email"
@@ -83,11 +89,12 @@ function Login() {
                                     onChange={handleChange}
                                     placeholder="demo@example.com"
                                     required
+                                    className="h-12 bg-neutral-off-white border-muted-tan-300 focus:border-soft-blue focus:ring-soft-blue/20 transition-all duration-200"
                                 />
                             </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="password">Password</Label>
+                            <div className="space-y-3">
+                                <Label htmlFor="password" className="text-gentle-slate-gray font-medium">Contraseña</Label>
                                 <Input
                                     id="password"
                                     name="password"
@@ -96,53 +103,38 @@ function Login() {
                                     onChange={handleChange}
                                     placeholder="password"
                                     required
+                                    className="h-12 bg-neutral-off-white border-muted-tan-300 focus:border-soft-blue focus:ring-soft-blue/20 transition-all duration-200"
                                 />
-                            </div>
-
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center space-x-2">
-                                    <Checkbox
-                                        id="rememberMe"
-                                        checked={formData.rememberMe}
-                                        onCheckedChange={(checked) =>
-                                            setFormData(prev => ({ ...prev, rememberMe: !!checked }))
-                                        }
-                                    />
-                                    <Label htmlFor="rememberMe" className="text-sm">Remember me</Label>
-                                </div>
-                                <Button variant="link" type="button" className="text-sm p-0 h-auto">
-                                    Forgot password?
-                                </Button>
                             </div>
 
                             <Button
                                 type="submit"
+                                variant="default"
                                 disabled={isLoading}
-                                className="w-full"
                                 size="lg"
+                                className="w-full text-white"
                             >
-                                {isLoading ? 'Signing in...' : 'Sign In'}
+                                {isLoading ? (
+                                    <div className="flex items-center space-x-2">
+                                        <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+                                        <span>Signing in...</span>
+                                    </div>
+                                ) : (
+                                    'Sign In'
+                                )}
                             </Button>
                         </form>
 
                         <div className="mt-8 text-center">
-                            <p className="text-muted-foreground">
-                                Don't have an account?{' '}
-                                <Button variant="link" asChild className="p-0 h-auto text-soft-coral hover:text-soft-coral-600">
-                                    <Link to="/register">Sign up</Link>
+                            <p className="text-gentle-slate-gray">
+                                No tienes una cuenta?{' '}
+                                <Button variant="link" asChild className="p-0 h-auto text-soft-coral hover:text-soft-coral-600 font-semibold">
+                                    <Link to="/register">Crea una aquí</Link>
                                 </Button>
                             </p>
                         </div>
 
-                        <div className="mt-6">
-                            <Alert>
-                                <AlertDescription className="text-center">
-                                    <strong>Demo Credentials:</strong><br />
-                                    Email: demo@example.com<br />
-                                    Password: password
-                                </AlertDescription>
-                            </Alert>
-                        </div>
+
                     </CardContent>
                 </Card>
             </div>

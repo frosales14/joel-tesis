@@ -1,60 +1,81 @@
 import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import logoImg from '@/assets/san-logo.png';
 
 function NotFound() {
     return (
-        <div className="min-h-screen bg-gradient-to-br from-neutral-off-white to-soft-coral-100 p-8 flex items-center justify-center">
-            <div className="max-w-md mx-auto text-center">
-                <div className="bg-neutral-off-white rounded-2xl shadow-large border border-soft-coral-200 p-8">
-                    {/* Logo */}
-                    <div className="flex justify-center mb-6">
-                        <img
-                            src={logoImg}
-                            alt="Sociedad Amigos de los Niños"
-                            className="h-12 object-contain opacity-50"
-                        />
-                    </div>
+        <div className="min-h-screen bg-gradient-to-br from-neutral-off-white via-soft-coral-50 to-warm-peach-100 flex items-center justify-center p-4 md:p-8">
+            {/* Background decoration */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute top-20 left-20 w-40 h-40 bg-soft-coral-200 rounded-full opacity-20 blur-xl"></div>
+                <div className="absolute bottom-20 right-20 w-32 h-32 bg-warm-peach-200 rounded-full opacity-25 blur-xl"></div>
+                <div className="absolute top-1/2 right-1/3 w-28 h-28 bg-pale-sky-yellow-200 rounded-full opacity-15 blur-xl"></div>
+            </div>
 
-                    {/* 404 Illustration */}
-                    <div className="text-6xl mb-4">🚫</div>
-
-                    <h1 className="text-5xl font-bold text-soft-coral mb-4">
-                        404
-                    </h1>
-
-                    <h2 className="text-2xl font-semibold text-gentle-slate-gray mb-4">
-                        Page Not Found
-                    </h2>
-
-                    <p className="text-gentle-slate-gray mb-8">
-                        Oops! The page you're looking for seems to have wandered off into the digital void.
-                        Don't worry, it happens to the best of us!
-                    </p>
-
-                    <div className="space-y-4">
-                        <Link
-                            to="/"
-                            className="block bg-soft-blue text-white px-8 py-3 rounded-lg hover:bg-soft-blue-600 transition-colors duration-200 font-semibold shadow-soft"
-                        >
-                            🏠 Take Me to Login
-                        </Link>
-
-                        <button
-                            onClick={() => window.history.back()}
-                            className="block w-full bg-muted-tan text-white px-8 py-3 rounded-lg hover:bg-muted-tan-600 transition-colors duration-200 font-semibold"
-                        >
-                            ← Go Back
-                        </button>
-                    </div>
-
-                    <div className="mt-8 text-sm text-gentle-slate-gray-600">
-                        <p>Need help? Try these links:</p>
-                        <div className="flex justify-center space-x-4 mt-2">
-                            <Link to="/" className="text-soft-blue hover:text-soft-blue-600 hover:underline">Login</Link>
-                            <Link to="/register" className="text-muted-sage-green hover:text-muted-sage-green-600 hover:underline">Register</Link>
+            <div className="max-w-lg mx-auto text-center relative z-10">
+                <Card className="shadow-large border-0 bg-white/80 backdrop-blur-sm">
+                    <CardContent className="p-8 md:p-12">
+                        {/* Logo */}
+                        <div className="flex justify-center mb-8">
+                            <div className="relative">
+                                <div className="absolute inset-0 bg-soft-coral-100 rounded-2xl blur-lg opacity-40"></div>
+                                <img
+                                    src={logoImg}
+                                    alt="Sociedad Amigos de los Niños"
+                                    className="relative h-16 object-contain bg-white rounded-xl p-2 shadow-medium"
+                                />
+                            </div>
                         </div>
-                    </div>
-                </div>
+
+                        {/* 404 Illustration */}
+                        <div className="text-8xl mb-6 animate-bounce">🔍</div>
+
+                        <h1 className="text-6xl font-bold bg-gradient-to-r from-soft-coral to-soft-coral-600 bg-clip-text text-transparent mb-4">
+                            404
+                        </h1>
+
+                        <h2 className="text-2xl font-semibold text-gentle-slate-gray mb-4">
+                            Page Not Found
+                        </h2>
+
+                        <p className="text-gentle-slate-gray mb-8 text-lg leading-relaxed">
+                            Oops! The page you're looking for seems to have wandered off.
+                            Let's get you back on track! 🧭
+                        </p>
+
+                        <div className="space-y-4">
+                            <Button
+                                asChild
+                                className="w-full h-12 bg-gradient-to-r from-soft-blue to-soft-blue-600 hover:from-soft-blue-600 hover:to-soft-blue-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                            >
+                                <Link to="/">
+                                    🏠 Take Me to Login
+                                </Link>
+                            </Button>
+
+                            <Button
+                                onClick={() => window.history.back()}
+                                variant="outline"
+                                className="w-full h-12 border-muted-tan-300 text-gentle-slate-gray hover:bg-muted-tan-50 hover:border-muted-tan-400 transition-all duration-200"
+                            >
+                                ← Go Back
+                            </Button>
+                        </div>
+
+                        <div className="mt-8 p-4 bg-warm-peach-50 rounded-lg border border-warm-peach-200">
+                            <p className="text-sm text-muted-tan-700 mb-3 font-medium">Need help? Try these links:</p>
+                            <div className="flex justify-center space-x-6">
+                                <Button variant="link" asChild className="p-0 h-auto text-soft-blue hover:text-soft-blue-600">
+                                    <Link to="/">Login</Link>
+                                </Button>
+                                <Button variant="link" asChild className="p-0 h-auto text-muted-sage-green hover:text-muted-sage-green-600">
+                                    <Link to="/register">Register</Link>
+                                </Button>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
         </div>
     );

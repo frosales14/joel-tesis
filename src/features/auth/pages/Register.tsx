@@ -2,10 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import logoImg from '@/assets/san-logo.png';
 
@@ -91,23 +88,31 @@ function Register() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-neutral-off-white to-muted-sage-green-100 flex items-center justify-center p-8">
-            <div className="max-w-md w-full">
-                <Card className="shadow-large">
-                    <CardHeader className="text-center space-y-6">
+        <div className="min-h-screen bg-gradient-to-br from-neutral-off-white via-muted-sage-green-50 to-warm-peach-100 flex items-center justify-center p-4 md:p-8">
+            {/* Background decoration */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute top-20 right-20 w-36 h-36 bg-muted-sage-green-200 rounded-full opacity-25 blur-xl"></div>
+                <div className="absolute bottom-20 left-20 w-32 h-32 bg-warm-peach-200 rounded-full opacity-30 blur-xl"></div>
+                <div className="absolute top-1/3 right-1/4 w-28 h-28 bg-pale-sky-yellow-200 rounded-full opacity-20 blur-xl"></div>
+            </div>
+
+            <div className="max-w-md w-full relative z-10">
+                <Card className="shadow-large border-0 bg-white/80 backdrop-blur-sm">
+                    <CardHeader className="text-center space-y-6 pb-6">
                         <div className="flex justify-center">
-                            <img
-                                src={logoImg}
-                                alt="Sociedad Amigos de los Niños"
-                                className="h-16 object-contain"
-                            />
+                            <div className="relative">
+                                <div className="absolute inset-0 bg-muted-sage-green-100 rounded-2xl blur-lg opacity-50"></div>
+                                <img
+                                    src={logoImg}
+                                    alt="Sociedad Amigos de los Niños"
+                                    className="relative h-20 object-contain bg-chart-1/80 rounded-xl p-3 shadow-medium"
+                                />
+                            </div>
                         </div>
-                        <div>
-                            <CardTitle className="text-2xl text-muted-sage-green-700 mb-2">
-                                Create Account ✨
-                            </CardTitle>
-                            <CardDescription className="text-gentle-slate-gray">
-                                Join us today and get started
+                        <div className="space-y-3">
+
+                            <CardDescription className="text-gentle-slate-gray text-base">
+                                Comienza a hacer una diferencia
                             </CardDescription>
                         </div>
                     </CardHeader>
@@ -120,8 +125,8 @@ function Register() {
 
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div>
-                                <label className="block text-sm font-medium text-gentle-slate-gray mb-2">
-                                    Full Name
+                                <label className="block text-left text-sm font-medium text-gentle-slate-gray mb-2">
+                                    Nombre Completo
                                 </label>
                                 <input
                                     type="text"
@@ -139,8 +144,8 @@ function Register() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gentle-slate-gray mb-2">
-                                    Email Address
+                                <label className="block  text-left text-sm font-medium text-gentle-slate-gray mb-2">
+                                    Correo Electrónico
                                 </label>
                                 <input
                                     type="email"
@@ -158,8 +163,8 @@ function Register() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gentle-slate-gray mb-2">
-                                    Password
+                                <label className="block text-left text-sm font-medium text-gentle-slate-gray mb-2">
+                                    Contraseña
                                 </label>
                                 <input
                                     type="password"
@@ -177,8 +182,8 @@ function Register() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gentle-slate-gray mb-2">
-                                    Confirm Password
+                                <label className="block text-left text-sm font-medium text-gentle-slate-gray mb-2">
+                                    Confirmar Contraseña
                                 </label>
                                 <input
                                     type="password"
@@ -195,47 +200,30 @@ function Register() {
                                 )}
                             </div>
 
-                            <div className="space-y-2">
-                                <div className="flex items-start space-x-2">
-                                    <Checkbox
-                                        id="agreeToTerms"
-                                        checked={formData.agreeToTerms}
-                                        onCheckedChange={(checked) =>
-                                            setFormData(prev => ({ ...prev, agreeToTerms: !!checked }))
-                                        }
-                                        className="mt-1"
-                                    />
-                                    <Label htmlFor="agreeToTerms" className="text-sm leading-5">
-                                        I agree to the{' '}
-                                        <Button variant="link" type="button" className="p-0 h-auto text-accent hover:text-accent/80">
-                                            Terms of Service
-                                        </Button>{' '}
-                                        and{' '}
-                                        <Button variant="link" type="button" className="p-0 h-auto text-accent hover:text-accent/80">
-                                            Privacy Policy
-                                        </Button>
-                                    </Label>
-                                </div>
-                                {validationErrors.agreeToTerms && (
-                                    <p className="text-destructive text-xs mt-1">{validationErrors.agreeToTerms}</p>
-                                )}
-                            </div>
+
 
                             <Button
                                 type="submit"
                                 disabled={isLoading}
-                                className="w-full"
+                                className="w-full "
                                 size="lg"
                             >
-                                {isLoading ? 'Creating Account...' : 'Create Account'}
+                                {isLoading ? (
+                                    <div className="flex items-center space-x-2">
+                                        <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+                                        <span>Creando Cuenta...</span>
+                                    </div>
+                                ) : (
+                                    'Crear Cuenta'
+                                )}
                             </Button>
                         </form>
 
                         <div className="mt-8 text-center">
-                            <p className="text-muted-foreground">
-                                Already have an account?{' '}
-                                <Button variant="link" asChild className="p-0 h-auto text-soft-coral hover:text-soft-coral-600">
-                                    <Link to="/">Sign in</Link>
+                            <p className="text-gentle-slate-gray">
+                                Ya tienes una cuenta?{' '}
+                                <Button variant="link" asChild className="p-0 h-auto text-soft-coral hover:text-soft-coral-600 font-semibold">
+                                    <Link to="/">Inicia sesión aquí</Link>
                                 </Button>
                             </p>
                         </div>

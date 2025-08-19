@@ -36,7 +36,7 @@ export const useAuth = () => {
     const [authState, setAuthState] = useState<AuthState>({
         user: null,
         isAuthenticated: false,
-        isLoading: true,
+        isLoading: false,
         error: null,
     });
 
