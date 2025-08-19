@@ -2,19 +2,41 @@ import { Link } from 'react-router-dom';
 
 function Home() {
     return (
-        <div>
-            <h1>Home Page</h1>
-            <p>Welcome to the React Router demo!</p>
-            <nav>
-                <ul>
-                    <li>
-                        <Link to="/about">Go to About</Link>
-                    </li>
-                    <li>
-                        <Link to="/contact">Go to Contact</Link>
-                    </li>
-                </ul>
-            </nav>
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
+            <div className="max-w-4xl mx-auto">
+                <h1 className="text-5xl font-bold text-center text-gray-800 mb-8">
+                    Welcome Home! 🏠
+                </h1>
+                <p className="text-xl text-gray-600 text-center mb-12">
+                    Welcome to our React Router + Tailwind CSS demo!
+                </p>
+
+                <nav className="flex justify-center">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <Link
+                            to="/about"
+                            className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow duration-300 text-center group"
+                        >
+                            <div className="text-3xl mb-4">ℹ️</div>
+                            <h3 className="text-xl font-semibold text-gray-800 group-hover:text-blue-600">
+                                About Us
+                            </h3>
+                            <p className="text-gray-600 mt-2">Learn more about our project</p>
+                        </Link>
+
+                        <Link
+                            to="/contact"
+                            className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow duration-300 text-center group"
+                        >
+                            <div className="text-3xl mb-4">📞</div>
+                            <h3 className="text-xl font-semibold text-gray-800 group-hover:text-blue-600">
+                                Contact
+                            </h3>
+                            <p className="text-gray-600 mt-2">Get in touch with us</p>
+                        </Link>
+                    </div>
+                </nav>
+            </div>
         </div>
     );
 }
