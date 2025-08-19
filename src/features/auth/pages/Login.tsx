@@ -115,7 +115,7 @@ function Login() {
                     <div className="mt-8 text-center">
                         <p className="text-gray-600">
                             Don't have an account?{' '}
-                            <Link to="/auth/register" className="text-blue-600 hover:underline font-semibold">
+                            <Link to="/register" className="text-blue-600 hover:underline font-semibold">
                                 Sign up
                             </Link>
                         </p>
@@ -129,14 +129,7 @@ function Login() {
                         </div>
                     </div>
 
-                    <div className="mt-6 text-center">
-                        <Link
-                            to="/"
-                            className="text-gray-600 hover:text-gray-800 text-sm"
-                        >
-                            ← Back to Home
-                        </Link>
-                    </div>
+
                 </div>
             </div>
         </div>

@@ -216,20 +216,13 @@ function Register() {
                     <div className="mt-8 text-center">
                         <p className="text-gray-600">
                             Already have an account?{' '}
-                            <Link to="/auth/login" className="text-green-600 hover:underline font-semibold">
+                            <Link to="/" className="text-green-600 hover:underline font-semibold">
                                 Sign in
                             </Link>
                         </p>
                     </div>
 
-                    <div className="mt-6 text-center">
-                        <Link
-                            to="/"
-                            className="text-gray-600 hover:text-gray-800 text-sm"
-                        >
-                            ← Back to Home
-                        </Link>
-                    </div>
+
                 </div>
             </div>
         </div>
