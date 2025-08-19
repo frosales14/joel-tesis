@@ -1,14 +1,24 @@
 import { Link } from 'react-router-dom';
+import logoImg from '@/assets/san-logo.png';
 
 function NotFound() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-neutral-off-white to-soft-coral-100 p-8 flex items-center justify-center">
             <div className="max-w-md mx-auto text-center">
                 <div className="bg-neutral-off-white rounded-2xl shadow-large border border-soft-coral-200 p-8">
-                    {/* 404 Illustration */}
-                    <div className="text-8xl mb-6">🚫</div>
+                    {/* Logo */}
+                    <div className="flex justify-center mb-6">
+                        <img
+                            src={logoImg}
+                            alt="Sociedad Amigos de los Niños"
+                            className="h-12 object-contain opacity-50"
+                        />
+                    </div>
 
-                    <h1 className="text-6xl font-bold text-soft-coral mb-4">
+                    {/* 404 Illustration */}
+                    <div className="text-6xl mb-4">🚫</div>
+
+                    <h1 className="text-5xl font-bold text-soft-coral mb-4">
                         404
                     </h1>
 

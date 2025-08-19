@@ -1,6 +1,13 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import logoImg from '@/assets/san-logo.png';
 
 // Types defined inline
 interface RegisterFormData {
@@ -86,144 +93,154 @@ function Register() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-neutral-off-white to-muted-sage-green-100 flex items-center justify-center p-8">
             <div className="max-w-md w-full">
-                <div className="bg-neutral-off-white rounded-2xl shadow-large border border-muted-sage-green-200 p-8">
-                    <div className="text-center mb-8">
-                        <h1 className="text-3xl font-bold text-muted-sage-green-700 mb-2">
-                            Create Account ✨
-                        </h1>
-                        <p className="text-gentle-slate-gray">
-                            Join us today and get started
-                        </p>
-                    </div>
-
-                    {error && (
-                        <div className="bg-soft-coral-50 border border-soft-coral-200 rounded-lg p-4 mb-6">
-                            <p className="text-soft-coral-700 text-sm">{error}</p>
-                        </div>
-                    )}
-
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        <div>
-                            <label className="block text-sm font-medium text-gentle-slate-gray mb-2">
-                                Full Name
-                            </label>
-                            <input
-                                type="text"
-                                name="name"
-                                value={formData.name}
-                                onChange={handleChange}
-                                required
-                                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-muted-sage-green focus:border-muted-sage-green bg-white transition-colors ${validationErrors.name ? 'border-soft-coral-300' : 'border-muted-tan-300'
-                                    }`}
-                                placeholder="John Doe"
+                <Card className="shadow-large">
+                    <CardHeader className="text-center space-y-6">
+                        <div className="flex justify-center">
+                            <img
+                                src={logoImg}
+                                alt="Sociedad Amigos de los Niños"
+                                className="h-16 object-contain"
                             />
-                            {validationErrors.name && (
-                                <p className="text-soft-coral-600 text-xs mt-1">{validationErrors.name}</p>
-                            )}
                         </div>
-
                         <div>
-                            <label className="block text-sm font-medium text-gentle-slate-gray mb-2">
-                                Email Address
-                            </label>
-                            <input
-                                type="email"
-                                name="email"
-                                value={formData.email}
-                                onChange={handleChange}
-                                required
-                                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-muted-sage-green focus:border-muted-sage-green bg-white transition-colors ${validationErrors.email ? 'border-soft-coral-300' : 'border-muted-tan-300'
-                                    }`}
-                                placeholder="john@example.com"
-                            />
-                            {validationErrors.email && (
-                                <p className="text-soft-coral-600 text-xs mt-1">{validationErrors.email}</p>
-                            )}
+                            <CardTitle className="text-2xl text-muted-sage-green-700 mb-2">
+                                Create Account ✨
+                            </CardTitle>
+                            <CardDescription className="text-gentle-slate-gray">
+                                Join us today and get started
+                            </CardDescription>
                         </div>
+                    </CardHeader>
+                    <CardContent>
+                        {error && (
+                            <Alert variant="destructive" className="mb-6">
+                                <AlertDescription>{error}</AlertDescription>
+                            </Alert>
+                        )}
 
-                        <div>
-                            <label className="block text-sm font-medium text-gentle-slate-gray mb-2">
-                                Password
-                            </label>
-                            <input
-                                type="password"
-                                name="password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                required
-                                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-muted-sage-green focus:border-muted-sage-green bg-white transition-colors ${validationErrors.password ? 'border-soft-coral-300' : 'border-muted-tan-300'
-                                    }`}
-                                placeholder="••••••••"
-                            />
-                            {validationErrors.password && (
-                                <p className="text-soft-coral-600 text-xs mt-1">{validationErrors.password}</p>
-                            )}
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gentle-slate-gray mb-2">
-                                Confirm Password
-                            </label>
-                            <input
-                                type="password"
-                                name="confirmPassword"
-                                value={formData.confirmPassword}
-                                onChange={handleChange}
-                                required
-                                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-muted-sage-green focus:border-muted-sage-green bg-white transition-colors ${validationErrors.confirmPassword ? 'border-soft-coral-300' : 'border-muted-tan-300'
-                                    }`}
-                                placeholder="••••••••"
-                            />
-                            {validationErrors.confirmPassword && (
-                                <p className="text-soft-coral-600 text-xs mt-1">{validationErrors.confirmPassword}</p>
-                            )}
-                        </div>
-
-                        <div>
-                            <label className="flex items-start">
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                            <div>
+                                <label className="block text-sm font-medium text-gentle-slate-gray mb-2">
+                                    Full Name
+                                </label>
                                 <input
-                                    type="checkbox"
-                                    name="agreeToTerms"
-                                    checked={formData.agreeToTerms}
+                                    type="text"
+                                    name="name"
+                                    value={formData.name}
                                     onChange={handleChange}
-                                    className="w-4 h-4 text-muted-sage-green border-muted-tan-300 rounded focus:ring-muted-sage-green mt-1"
+                                    required
+                                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-muted-sage-green focus:border-muted-sage-green bg-white transition-colors ${validationErrors.name ? 'border-soft-coral-300' : 'border-muted-tan-300'
+                                        }`}
+                                    placeholder="John Doe"
                                 />
-                                <span className="ml-2 text-sm text-gentle-slate-gray">
-                                    I agree to the{' '}
-                                    <button type="button" className="text-muted-sage-green-600 hover:text-muted-sage-green-700 hover:underline">
-                                        Terms of Service
-                                    </button>{' '}
-                                    and{' '}
-                                    <button type="button" className="text-muted-sage-green-600 hover:text-muted-sage-green-700 hover:underline">
-                                        Privacy Policy
-                                    </button>
-                                </span>
-                            </label>
-                            {validationErrors.agreeToTerms && (
-                                <p className="text-soft-coral-600 text-xs mt-1">{validationErrors.agreeToTerms}</p>
-                            )}
+                                {validationErrors.name && (
+                                    <p className="text-soft-coral-600 text-xs mt-1">{validationErrors.name}</p>
+                                )}
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gentle-slate-gray mb-2">
+                                    Email Address
+                                </label>
+                                <input
+                                    type="email"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    required
+                                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-muted-sage-green focus:border-muted-sage-green bg-white transition-colors ${validationErrors.email ? 'border-soft-coral-300' : 'border-muted-tan-300'
+                                        }`}
+                                    placeholder="john@example.com"
+                                />
+                                {validationErrors.email && (
+                                    <p className="text-soft-coral-600 text-xs mt-1">{validationErrors.email}</p>
+                                )}
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gentle-slate-gray mb-2">
+                                    Password
+                                </label>
+                                <input
+                                    type="password"
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    required
+                                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-muted-sage-green focus:border-muted-sage-green bg-white transition-colors ${validationErrors.password ? 'border-soft-coral-300' : 'border-muted-tan-300'
+                                        }`}
+                                    placeholder="••••••••"
+                                />
+                                {validationErrors.password && (
+                                    <p className="text-soft-coral-600 text-xs mt-1">{validationErrors.password}</p>
+                                )}
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gentle-slate-gray mb-2">
+                                    Confirm Password
+                                </label>
+                                <input
+                                    type="password"
+                                    name="confirmPassword"
+                                    value={formData.confirmPassword}
+                                    onChange={handleChange}
+                                    required
+                                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-muted-sage-green focus:border-muted-sage-green bg-white transition-colors ${validationErrors.confirmPassword ? 'border-soft-coral-300' : 'border-muted-tan-300'
+                                        }`}
+                                    placeholder="••••••••"
+                                />
+                                {validationErrors.confirmPassword && (
+                                    <p className="text-soft-coral-600 text-xs mt-1">{validationErrors.confirmPassword}</p>
+                                )}
+                            </div>
+
+                            <div className="space-y-2">
+                                <div className="flex items-start space-x-2">
+                                    <Checkbox
+                                        id="agreeToTerms"
+                                        checked={formData.agreeToTerms}
+                                        onCheckedChange={(checked) =>
+                                            setFormData(prev => ({ ...prev, agreeToTerms: !!checked }))
+                                        }
+                                        className="mt-1"
+                                    />
+                                    <Label htmlFor="agreeToTerms" className="text-sm leading-5">
+                                        I agree to the{' '}
+                                        <Button variant="link" type="button" className="p-0 h-auto text-accent hover:text-accent/80">
+                                            Terms of Service
+                                        </Button>{' '}
+                                        and{' '}
+                                        <Button variant="link" type="button" className="p-0 h-auto text-accent hover:text-accent/80">
+                                            Privacy Policy
+                                        </Button>
+                                    </Label>
+                                </div>
+                                {validationErrors.agreeToTerms && (
+                                    <p className="text-destructive text-xs mt-1">{validationErrors.agreeToTerms}</p>
+                                )}
+                            </div>
+
+                            <Button
+                                type="submit"
+                                disabled={isLoading}
+                                className="w-full"
+                                size="lg"
+                            >
+                                {isLoading ? 'Creating Account...' : 'Create Account'}
+                            </Button>
+                        </form>
+
+                        <div className="mt-8 text-center">
+                            <p className="text-muted-foreground">
+                                Already have an account?{' '}
+                                <Button variant="link" asChild className="p-0 h-auto text-soft-coral hover:text-soft-coral-600">
+                                    <Link to="/">Sign in</Link>
+                                </Button>
+                            </p>
                         </div>
-
-                        <button
-                            type="submit"
-                            disabled={isLoading}
-                            className="w-full bg-muted-sage-green text-white py-3 rounded-lg hover:bg-muted-sage-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 font-semibold shadow-soft"
-                        >
-                            {isLoading ? 'Creating Account...' : 'Create Account'}
-                        </button>
-                    </form>
-
-                    <div className="mt-8 text-center">
-                        <p className="text-gentle-slate-gray">
-                            Already have an account?{' '}
-                            <Link to="/" className="text-soft-coral hover:text-soft-coral-600 hover:underline font-semibold">
-                                Sign in
-                            </Link>
-                        </p>
-                    </div>
-
-
-                </div>
+                    </CardContent>
+                </Card>
             </div>
         </div>
     );

@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import logoImg from '@/assets/san-logo.png';
 
 // Types defined inline
 interface LoginFormData {
@@ -47,13 +48,22 @@ function Login() {
         <div className="min-h-screen bg-gradient-to-br from-neutral-off-white to-warm-peach-100 flex items-center justify-center p-8">
             <div className="max-w-md w-full">
                 <Card className="shadow-large">
-                    <CardHeader className="text-center">
-                        <CardTitle className="text-3xl text-soft-blue mb-2">
-                            Welcome Back! 👋
-                        </CardTitle>
-                        <CardDescription className="text-gentle-slate-gray">
-                            Sign in to your account to continue
-                        </CardDescription>
+                    <CardHeader className="text-center space-y-6">
+                        <div className="flex justify-center">
+                            <img
+                                src={logoImg}
+                                alt="Sociedad Amigos de los Niños"
+                                className="h-16 object-contain"
+                            />
+                        </div>
+                        <div>
+                            <CardTitle className="text-2xl text-soft-blue mb-2">
+                                Welcome Back! 👋
+                            </CardTitle>
+                            <CardDescription className="text-gentle-slate-gray">
+                                Sign in to your account to continue
+                            </CardDescription>
+                        </div>
                     </CardHeader>
                     <CardContent>
                         {error && (
