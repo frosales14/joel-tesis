@@ -84,27 +84,27 @@ function Register() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center p-8">
+        <div className="min-h-screen bg-gradient-to-br from-neutral-off-white to-muted-sage-green-100 flex items-center justify-center p-8">
             <div className="max-w-md w-full">
-                <div className="bg-white rounded-xl shadow-lg p-8">
+                <div className="bg-neutral-off-white rounded-2xl shadow-large border border-muted-sage-green-200 p-8">
                     <div className="text-center mb-8">
-                        <h1 className="text-3xl font-bold text-gray-800 mb-2">
+                        <h1 className="text-3xl font-bold text-muted-sage-green-700 mb-2">
                             Create Account ✨
                         </h1>
-                        <p className="text-gray-600">
+                        <p className="text-gentle-slate-gray">
                             Join us today and get started
                         </p>
                     </div>
 
                     {error && (
-                        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-                            <p className="text-red-600 text-sm">{error}</p>
+                        <div className="bg-soft-coral-50 border border-soft-coral-200 rounded-lg p-4 mb-6">
+                            <p className="text-soft-coral-700 text-sm">{error}</p>
                         </div>
                     )}
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-gentle-slate-gray mb-2">
                                 Full Name
                             </label>
                             <input
@@ -113,17 +113,17 @@ function Register() {
                                 value={formData.name}
                                 onChange={handleChange}
                                 required
-                                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors ${validationErrors.name ? 'border-red-300' : 'border-gray-300'
+                                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-muted-sage-green focus:border-muted-sage-green bg-white transition-colors ${validationErrors.name ? 'border-soft-coral-300' : 'border-muted-tan-300'
                                     }`}
                                 placeholder="John Doe"
                             />
                             {validationErrors.name && (
-                                <p className="text-red-600 text-xs mt-1">{validationErrors.name}</p>
+                                <p className="text-soft-coral-600 text-xs mt-1">{validationErrors.name}</p>
                             )}
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-gentle-slate-gray mb-2">
                                 Email Address
                             </label>
                             <input
@@ -132,17 +132,17 @@ function Register() {
                                 value={formData.email}
                                 onChange={handleChange}
                                 required
-                                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors ${validationErrors.email ? 'border-red-300' : 'border-gray-300'
+                                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-muted-sage-green focus:border-muted-sage-green bg-white transition-colors ${validationErrors.email ? 'border-soft-coral-300' : 'border-muted-tan-300'
                                     }`}
                                 placeholder="john@example.com"
                             />
                             {validationErrors.email && (
-                                <p className="text-red-600 text-xs mt-1">{validationErrors.email}</p>
+                                <p className="text-soft-coral-600 text-xs mt-1">{validationErrors.email}</p>
                             )}
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-gentle-slate-gray mb-2">
                                 Password
                             </label>
                             <input
@@ -151,17 +151,17 @@ function Register() {
                                 value={formData.password}
                                 onChange={handleChange}
                                 required
-                                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors ${validationErrors.password ? 'border-red-300' : 'border-gray-300'
+                                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-muted-sage-green focus:border-muted-sage-green bg-white transition-colors ${validationErrors.password ? 'border-soft-coral-300' : 'border-muted-tan-300'
                                     }`}
                                 placeholder="••••••••"
                             />
                             {validationErrors.password && (
-                                <p className="text-red-600 text-xs mt-1">{validationErrors.password}</p>
+                                <p className="text-soft-coral-600 text-xs mt-1">{validationErrors.password}</p>
                             )}
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-gentle-slate-gray mb-2">
                                 Confirm Password
                             </label>
                             <input
@@ -170,12 +170,12 @@ function Register() {
                                 value={formData.confirmPassword}
                                 onChange={handleChange}
                                 required
-                                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors ${validationErrors.confirmPassword ? 'border-red-300' : 'border-gray-300'
+                                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-muted-sage-green focus:border-muted-sage-green bg-white transition-colors ${validationErrors.confirmPassword ? 'border-soft-coral-300' : 'border-muted-tan-300'
                                     }`}
                                 placeholder="••••••••"
                             />
                             {validationErrors.confirmPassword && (
-                                <p className="text-red-600 text-xs mt-1">{validationErrors.confirmPassword}</p>
+                                <p className="text-soft-coral-600 text-xs mt-1">{validationErrors.confirmPassword}</p>
                             )}
                         </div>
 
@@ -186,37 +186,37 @@ function Register() {
                                     name="agreeToTerms"
                                     checked={formData.agreeToTerms}
                                     onChange={handleChange}
-                                    className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500 mt-1"
+                                    className="w-4 h-4 text-muted-sage-green border-muted-tan-300 rounded focus:ring-muted-sage-green mt-1"
                                 />
-                                <span className="ml-2 text-sm text-gray-600">
+                                <span className="ml-2 text-sm text-gentle-slate-gray">
                                     I agree to the{' '}
-                                    <button type="button" className="text-green-600 hover:underline">
+                                    <button type="button" className="text-muted-sage-green-600 hover:text-muted-sage-green-700 hover:underline">
                                         Terms of Service
                                     </button>{' '}
                                     and{' '}
-                                    <button type="button" className="text-green-600 hover:underline">
+                                    <button type="button" className="text-muted-sage-green-600 hover:text-muted-sage-green-700 hover:underline">
                                         Privacy Policy
                                     </button>
                                 </span>
                             </label>
                             {validationErrors.agreeToTerms && (
-                                <p className="text-red-600 text-xs mt-1">{validationErrors.agreeToTerms}</p>
+                                <p className="text-soft-coral-600 text-xs mt-1">{validationErrors.agreeToTerms}</p>
                             )}
                         </div>
 
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 font-semibold"
+                            className="w-full bg-muted-sage-green text-white py-3 rounded-lg hover:bg-muted-sage-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 font-semibold shadow-soft"
                         >
                             {isLoading ? 'Creating Account...' : 'Create Account'}
                         </button>
                     </form>
 
                     <div className="mt-8 text-center">
-                        <p className="text-gray-600">
+                        <p className="text-gentle-slate-gray">
                             Already have an account?{' '}
-                            <Link to="/" className="text-green-600 hover:underline font-semibold">
+                            <Link to="/" className="text-soft-coral hover:text-soft-coral-600 hover:underline font-semibold">
                                 Sign in
                             </Link>
                         </p>

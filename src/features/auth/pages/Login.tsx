@@ -38,27 +38,27 @@ function Login() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-8">
+        <div className="min-h-screen bg-gradient-to-br from-neutral-off-white to-warm-peach-100 flex items-center justify-center p-8">
             <div className="max-w-md w-full">
-                <div className="bg-white rounded-xl shadow-lg p-8">
+                <div className="bg-neutral-off-white rounded-2xl shadow-large border border-warm-peach-200 p-8">
                     <div className="text-center mb-8">
-                        <h1 className="text-3xl font-bold text-gray-800 mb-2">
+                        <h1 className="text-3xl font-bold text-soft-blue mb-2">
                             Welcome Back! 👋
                         </h1>
-                        <p className="text-gray-600">
+                        <p className="text-gentle-slate-gray">
                             Sign in to your account to continue
                         </p>
                     </div>
 
                     {error && (
-                        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-                            <p className="text-red-600 text-sm">{error}</p>
+                        <div className="bg-soft-coral-50 border border-soft-coral-200 rounded-lg p-4 mb-6">
+                            <p className="text-soft-coral-700 text-sm">{error}</p>
                         </div>
                     )}
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-gentle-slate-gray mb-2">
                                 Email Address
                             </label>
                             <input
@@ -67,13 +67,13 @@ function Login() {
                                 value={formData.email}
                                 onChange={handleChange}
                                 required
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                                className="w-full px-4 py-3 border border-muted-tan-300 rounded-lg focus:ring-2 focus:ring-soft-blue focus:border-soft-blue bg-white transition-colors"
                                 placeholder="demo@example.com"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-gentle-slate-gray mb-2">
                                 Password
                             </label>
                             <input
@@ -82,7 +82,7 @@ function Login() {
                                 value={formData.password}
                                 onChange={handleChange}
                                 required
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                                className="w-full px-4 py-3 border border-muted-tan-300 rounded-lg focus:ring-2 focus:ring-soft-blue focus:border-soft-blue bg-white transition-colors"
                                 placeholder="password"
                             />
                         </div>
@@ -94,11 +94,11 @@ function Login() {
                                     name="rememberMe"
                                     checked={formData.rememberMe}
                                     onChange={handleChange}
-                                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                    className="w-4 h-4 text-soft-blue border-muted-tan-300 rounded focus:ring-soft-blue"
                                 />
-                                <span className="ml-2 text-sm text-gray-600">Remember me</span>
+                                <span className="ml-2 text-sm text-gentle-slate-gray">Remember me</span>
                             </label>
-                            <button type="button" className="text-sm text-blue-600 hover:underline">
+                            <button type="button" className="text-sm text-soft-blue hover:text-soft-blue-600 hover:underline">
                                 Forgot password?
                             </button>
                         </div>
@@ -106,24 +106,24 @@ function Login() {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 font-semibold"
+                            className="w-full bg-soft-blue text-white py-3 rounded-lg hover:bg-soft-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 font-semibold shadow-soft"
                         >
                             {isLoading ? 'Signing in...' : 'Sign In'}
                         </button>
                     </form>
 
                     <div className="mt-8 text-center">
-                        <p className="text-gray-600">
+                        <p className="text-gentle-slate-gray">
                             Don't have an account?{' '}
-                            <Link to="/register" className="text-blue-600 hover:underline font-semibold">
+                            <Link to="/register" className="text-soft-coral hover:text-soft-coral-600 hover:underline font-semibold">
                                 Sign up
                             </Link>
                         </p>
                     </div>
 
                     <div className="mt-6 text-center">
-                        <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg">
-                            <p className="font-semibold mb-1">Demo Credentials:</p>
+                        <div className="text-xs text-gentle-slate-gray-600 bg-warm-peach-50 border border-warm-peach-200 p-3 rounded-lg">
+                            <p className="font-semibold mb-1 text-muted-tan-700">Demo Credentials:</p>
                             <p>Email: demo@example.com</p>
                             <p>Password: password</p>
                         </div>
