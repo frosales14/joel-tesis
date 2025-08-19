@@ -1,17 +1,25 @@
 import { Routes, Route } from 'react-router-dom'
-import Home from './pages/Home'
-import About from './pages/About'
-import Contact from './pages/Contact'
-import NotFound from './pages/NotFound'
+import { HomePage } from './features/home'
+import { AboutPage } from './features/about'
+import { ContactPage } from './features/contact'
+import { LoginPage, RegisterPage } from './features/auth'
+import { NotFound } from './shared'
 import './App.css'
 
 function App() {
   return (
     <div className="app">
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/contact" element={<Contact />} />
+        {/* Public Routes */}
+        <Route path="/" element={<HomePage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/contact" element={<ContactPage />} />
+
+        {/* Auth Routes */}
+        <Route path="/auth/login" element={<LoginPage />} />
+        <Route path="/auth/register" element={<RegisterPage />} />
+
+        {/* 404 Route */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </div>

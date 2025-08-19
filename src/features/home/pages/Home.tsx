@@ -12,7 +12,7 @@ function Home() {
                 </p>
 
                 <nav className="flex justify-center">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <Link
                             to="/about"
                             className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow duration-300 text-center group"
@@ -33,6 +33,28 @@ function Home() {
                                 Contact
                             </h3>
                             <p className="text-gray-600 mt-2">Get in touch with us</p>
+                        </Link>
+
+                        <Link
+                            to="/auth/login"
+                            className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow duration-300 text-center group"
+                        >
+                            <div className="text-3xl mb-4">🔐</div>
+                            <h3 className="text-xl font-semibold text-gray-800 group-hover:text-blue-600">
+                                Sign In
+                            </h3>
+                            <p className="text-gray-600 mt-2">Access your account</p>
+                        </Link>
+
+                        <Link
+                            to="/auth/register"
+                            className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow duration-300 text-center group"
+                        >
+                            <div className="text-3xl mb-4">✨</div>
+                            <h3 className="text-xl font-semibold text-gray-800 group-hover:text-blue-600">
+                                Sign Up
+                            </h3>
+                            <p className="text-gray-600 mt-2">Create new account</p>
                         </Link>
                     </div>
                 </nav>
