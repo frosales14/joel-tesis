@@ -1,6 +1,12 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 // Types defined inline
 interface LoginFormData {
@@ -40,97 +46,95 @@ function Login() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-neutral-off-white to-warm-peach-100 flex items-center justify-center p-8">
             <div className="max-w-md w-full">
-                <div className="bg-neutral-off-white rounded-2xl shadow-large border border-warm-peach-200 p-8">
-                    <div className="text-center mb-8">
-                        <h1 className="text-3xl font-bold text-soft-blue mb-2">
+                <Card className="shadow-large">
+                    <CardHeader className="text-center">
+                        <CardTitle className="text-3xl text-soft-blue mb-2">
                             Welcome Back! 👋
-                        </h1>
-                        <p className="text-gentle-slate-gray">
+                        </CardTitle>
+                        <CardDescription className="text-gentle-slate-gray">
                             Sign in to your account to continue
-                        </p>
-                    </div>
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {error && (
+                            <Alert variant="destructive" className="mb-6">
+                                <AlertDescription>{error}</AlertDescription>
+                            </Alert>
+                        )}
 
-                    {error && (
-                        <div className="bg-soft-coral-50 border border-soft-coral-200 rounded-lg p-4 mb-6">
-                            <p className="text-soft-coral-700 text-sm">{error}</p>
-                        </div>
-                    )}
-
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        <div>
-                            <label className="block text-sm font-medium text-gentle-slate-gray mb-2">
-                                Email Address
-                            </label>
-                            <input
-                                type="email"
-                                name="email"
-                                value={formData.email}
-                                onChange={handleChange}
-                                required
-                                className="w-full px-4 py-3 border border-muted-tan-300 rounded-lg focus:ring-2 focus:ring-soft-blue focus:border-soft-blue bg-white transition-colors"
-                                placeholder="demo@example.com"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gentle-slate-gray mb-2">
-                                Password
-                            </label>
-                            <input
-                                type="password"
-                                name="password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                required
-                                className="w-full px-4 py-3 border border-muted-tan-300 rounded-lg focus:ring-2 focus:ring-soft-blue focus:border-soft-blue bg-white transition-colors"
-                                placeholder="password"
-                            />
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                            <label className="flex items-center">
-                                <input
-                                    type="checkbox"
-                                    name="rememberMe"
-                                    checked={formData.rememberMe}
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                            <div className="space-y-2">
+                                <Label htmlFor="email">Email Address</Label>
+                                <Input
+                                    id="email"
+                                    name="email"
+                                    type="email"
+                                    value={formData.email}
                                     onChange={handleChange}
-                                    className="w-4 h-4 text-soft-blue border-muted-tan-300 rounded focus:ring-soft-blue"
+                                    placeholder="demo@example.com"
+                                    required
                                 />
-                                <span className="ml-2 text-sm text-gentle-slate-gray">Remember me</span>
-                            </label>
-                            <button type="button" className="text-sm text-soft-blue hover:text-soft-blue-600 hover:underline">
-                                Forgot password?
-                            </button>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="password">Password</Label>
+                                <Input
+                                    id="password"
+                                    name="password"
+                                    type="password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    placeholder="password"
+                                    required
+                                />
+                            </div>
+
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-2">
+                                    <Checkbox
+                                        id="rememberMe"
+                                        checked={formData.rememberMe}
+                                        onCheckedChange={(checked) =>
+                                            setFormData(prev => ({ ...prev, rememberMe: !!checked }))
+                                        }
+                                    />
+                                    <Label htmlFor="rememberMe" className="text-sm">Remember me</Label>
+                                </div>
+                                <Button variant="link" type="button" className="text-sm p-0 h-auto">
+                                    Forgot password?
+                                </Button>
+                            </div>
+
+                            <Button
+                                type="submit"
+                                disabled={isLoading}
+                                className="w-full"
+                                size="lg"
+                            >
+                                {isLoading ? 'Signing in...' : 'Sign In'}
+                            </Button>
+                        </form>
+
+                        <div className="mt-8 text-center">
+                            <p className="text-muted-foreground">
+                                Don't have an account?{' '}
+                                <Button variant="link" asChild className="p-0 h-auto text-soft-coral hover:text-soft-coral-600">
+                                    <Link to="/register">Sign up</Link>
+                                </Button>
+                            </p>
                         </div>
 
-                        <button
-                            type="submit"
-                            disabled={isLoading}
-                            className="w-full bg-soft-blue text-white py-3 rounded-lg hover:bg-soft-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 font-semibold shadow-soft"
-                        >
-                            {isLoading ? 'Signing in...' : 'Sign In'}
-                        </button>
-                    </form>
-
-                    <div className="mt-8 text-center">
-                        <p className="text-gentle-slate-gray">
-                            Don't have an account?{' '}
-                            <Link to="/register" className="text-soft-coral hover:text-soft-coral-600 hover:underline font-semibold">
-                                Sign up
-                            </Link>
-                        </p>
-                    </div>
-
-                    <div className="mt-6 text-center">
-                        <div className="text-xs text-gentle-slate-gray-600 bg-warm-peach-50 border border-warm-peach-200 p-3 rounded-lg">
-                            <p className="font-semibold mb-1 text-muted-tan-700">Demo Credentials:</p>
-                            <p>Email: demo@example.com</p>
-                            <p>Password: password</p>
+                        <div className="mt-6">
+                            <Alert>
+                                <AlertDescription className="text-center">
+                                    <strong>Demo Credentials:</strong><br />
+                                    Email: demo@example.com<br />
+                                    Password: password
+                                </AlertDescription>
+                            </Alert>
                         </div>
-                    </div>
-
-
-                </div>
+                    </CardContent>
+                </Card>
             </div>
         </div>
     );
