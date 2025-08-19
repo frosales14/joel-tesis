@@ -1,8 +1,11 @@
-// Types defined inline to avoid circular dependencies
-interface User {
+import { supabase } from '@/lib/supabase'
+import type { User, Session } from '@supabase/supabase-js'
+
+// Updated types to match Supabase
+interface CustomUser {
     id: string;
     email: string;
-    name: string;
+    name?: string;
     avatar?: string;
     createdAt: Date;
     updatedAt: Date;
@@ -23,186 +26,138 @@ interface RegisterFormData {
 }
 
 interface AuthResponse {
-    user: User;
-    accessToken: string;
-    refreshToken: string;
+    user: CustomUser;
+    session: Session;
 }
 
-// Mock API endpoints - replace with actual API calls
-const API_BASE_URL = 'https://api.example.com';
-
 class AuthService {
-    private getAuthToken(): string | null {
-        return localStorage.getItem('authToken');
-    }
-
-    private setAuthToken(token: string): void {
-        localStorage.setItem('authToken', token);
-    }
-
-    private removeAuthToken(): void {
-        localStorage.removeItem('authToken');
+    // Convert Supabase User to our CustomUser format
+    private mapSupabaseUser(user: User, userMetadata?: any): CustomUser {
+        return {
+            id: user.id,
+            email: user.email!,
+            name: userMetadata?.name || user.user_metadata?.name || user.email?.split('@')[0] || 'User',
+            avatar: user.user_metadata?.avatar_url,
+            createdAt: new Date(user.created_at || ''),
+            updatedAt: new Date(user.updated_at || '')
+        }
     }
 
     async login(credentials: LoginFormData): Promise<AuthResponse> {
-        try {
-            // Mock API call - replace with actual implementation
-            const response = await fetch(`${API_BASE_URL}/auth/login`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(credentials),
-            });
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email: credentials.email,
+            password: credentials.password,
+        })
 
-            if (!response.ok) {
-                throw new Error('Invalid credentials');
-            }
+        if (error) {
+            throw new Error(error.message)
+        }
 
-            const data: AuthResponse = await response.json();
-            this.setAuthToken(data.accessToken);
+        if (!data.user || !data.session) {
+            throw new Error('Login failed - no user data returned')
+        }
 
-            return data;
-        } catch (error) {
-            // Mock implementation for demo
-            if (credentials.email === 'demo@example.com' && credentials.password === 'password') {
-                const mockResponse: AuthResponse = {
-                    user: {
-                        id: '1',
-                        email: credentials.email,
-                        name: 'Demo User',
-                        avatar: 'https://via.placeholder.com/100',
-                        createdAt: new Date(),
-                        updatedAt: new Date(),
-                    },
-                    accessToken: 'mock-access-token',
-                    refreshToken: 'mock-refresh-token',
-                };
-                this.setAuthToken(mockResponse.accessToken);
-                return mockResponse;
-            }
-            throw new Error('Invalid credentials. Try demo@example.com / password');
+        return {
+            user: this.mapSupabaseUser(data.user),
+            session: data.session
         }
     }
 
     async register(userData: RegisterFormData): Promise<AuthResponse> {
-        try {
-            // Mock API call - replace with actual implementation
-            const response = await fetch(`${API_BASE_URL}/auth/register`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(userData),
-            });
+        if (userData.password !== userData.confirmPassword) {
+            throw new Error('Passwords do not match')
+        }
 
-            if (!response.ok) {
-                throw new Error('Registration failed');
-            }
+        if (!userData.agreeToTerms) {
+            throw new Error('You must agree to the terms and conditions')
+        }
 
-            const data: AuthResponse = await response.json();
-            this.setAuthToken(data.accessToken);
-
-            return data;
-        } catch (error) {
-            // Mock implementation for demo
-            const mockResponse: AuthResponse = {
-                user: {
-                    id: '2',
-                    email: userData.email,
+        const { data, error } = await supabase.auth.signUp({
+            email: userData.email,
+            password: userData.password,
+            options: {
+                data: {
                     name: userData.name,
-                    avatar: 'https://via.placeholder.com/100',
-                    createdAt: new Date(),
-                    updatedAt: new Date(),
-                },
-                accessToken: 'mock-access-token',
-                refreshToken: 'mock-refresh-token',
-            };
-            this.setAuthToken(mockResponse.accessToken);
-            return mockResponse;
+                }
+            }
+        })
+
+        if (error) {
+            throw new Error(error.message)
+        }
+
+        if (!data.user) {
+            throw new Error('Registration failed - no user data returned')
+        }
+
+        // Check if email confirmation is required
+        if (!data.session) {
+            throw new Error('Please check your email to confirm your account before signing in')
+        }
+
+        return {
+            user: this.mapSupabaseUser(data.user),
+            session: data.session
         }
     }
 
     async logout(): Promise<void> {
-        try {
-            const token = this.getAuthToken();
-            if (token) {
-                // Mock API call - replace with actual implementation
-                await fetch(`${API_BASE_URL}/auth/logout`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                    },
-                });
-            }
-        } catch (error) {
-            console.warn('Logout API call failed:', error);
-        } finally {
-            this.removeAuthToken();
+        const { error } = await supabase.auth.signOut()
+        if (error) {
+            throw new Error(error.message)
         }
     }
 
-    async getCurrentUser(): Promise<User | null> {
-        const token = this.getAuthToken();
-        if (!token) return null;
+    async getCurrentUser(): Promise<CustomUser | null> {
+        const { data: { user }, error } = await supabase.auth.getUser()
 
-        try {
-            // Mock API call - replace with actual implementation
-            const response = await fetch(`${API_BASE_URL}/auth/me`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                },
-            });
+        if (error || !user) {
+            return null
+        }
 
-            if (!response.ok) {
-                this.removeAuthToken();
-                return null;
-            }
+        return this.mapSupabaseUser(user)
+    }
 
-            return await response.json();
-        } catch (error) {
-            // Mock implementation for demo
-            if (token === 'mock-access-token') {
-                return {
-                    id: '1',
-                    email: 'demo@example.com',
-                    name: 'Demo User',
-                    avatar: 'https://via.placeholder.com/100',
-                    createdAt: new Date(),
-                    updatedAt: new Date(),
-                };
-            }
-            this.removeAuthToken();
-            return null;
+    async getCurrentSession(): Promise<Session | null> {
+        const { data: { session } } = await supabase.auth.getSession()
+        return session
+    }
+
+    // Get auth state changes for real-time updates
+    onAuthStateChange(callback: (user: CustomUser | null) => void) {
+        return supabase.auth.onAuthStateChange((event, session) => {
+            const user = session?.user ? this.mapSupabaseUser(session.user) : null
+            callback(user)
+        })
+    }
+
+    // Password reset functionality
+    async resetPassword(email: string): Promise<void> {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: `${window.location.origin}/reset-password`,
+        })
+
+        if (error) {
+            throw new Error(error.message)
         }
     }
 
-    async refreshToken(): Promise<string | null> {
-        const token = this.getAuthToken();
-        if (!token) return null;
+    // Update user profile
+    async updateProfile(updates: { name?: string; avatar?: string }): Promise<CustomUser> {
+        const { data, error } = await supabase.auth.updateUser({
+            data: updates
+        })
 
-        try {
-            // Mock API call - replace with actual implementation
-            const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                },
-            });
-
-            if (!response.ok) {
-                this.removeAuthToken();
-                return null;
-            }
-
-            const data = await response.json();
-            this.setAuthToken(data.accessToken);
-            return data.accessToken;
-        } catch (error) {
-            this.removeAuthToken();
-            return null;
+        if (error) {
+            throw new Error(error.message)
         }
+
+        if (!data.user) {
+            throw new Error('Failed to update profile')
+        }
+
+        return this.mapSupabaseUser(data.user)
     }
 }
 
-export const authService = new AuthService();
+export const authService = new AuthService()
