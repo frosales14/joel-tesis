@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import { useNavigate, useLocation } from "react-router-dom"
 import { MoreHorizontal, Plus, Search, Filter, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -26,15 +27,19 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { studentService } from "../services/studentService"
 import type { AlumnoWithFamiliar, StudentFilters } from "../types"
 
 export default function StudentsPage() {
+    const navigate = useNavigate()
+    const location = useLocation()
     const [searchTerm, setSearchTerm] = useState("")
     const [students, setStudents] = useState<AlumnoWithFamiliar[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [totalStudents, setTotalStudents] = useState(0)
+    const [successMessage, setSuccessMessage] = useState<string | null>(null)
     const [stats, setStats] = useState({
         totalStudents: 0,
         activeStudents: 0,
@@ -69,10 +74,19 @@ export default function StudentsPage() {
         }
     }
 
-    // Load data on component mount
+    // Load data on component mount and handle success messages
     useEffect(() => {
         loadStudents()
         loadStats()
+
+        // Check for success message from navigation state
+        if (location.state?.message && location.state?.type === 'success') {
+            setSuccessMessage(location.state.message)
+            // Clear the message after showing it
+            window.history.replaceState({}, document.title)
+            // Auto-hide success message after 5 seconds
+            setTimeout(() => setSuccessMessage(null), 5000)
+        }
     }, [])
 
     // Handle search with debouncing
@@ -131,8 +145,29 @@ export default function StudentsPage() {
         return `Grado ${grado}`
     }
 
+    const handleCreateStudent = () => {
+        navigate('/dashboard/alumnos/crear')
+    }
+
     return (
         <div className="space-y-6">
+            {/* Success Message */}
+            {successMessage && (
+                <Alert className="border-muted-sage-green-200 bg-muted-sage-green-50 relative">
+                    <AlertDescription className="text-muted-sage-green-700 font-medium pr-8">
+                        {successMessage}
+                    </AlertDescription>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="absolute top-2 right-2 h-6 w-6 p-0 hover:bg-muted-sage-green-100"
+                        onClick={() => setSuccessMessage(null)}
+                    >
+                        ×
+                    </Button>
+                </Alert>
+            )}
+
             {/* Page Header */}
             <div className="flex justify-between items-start">
                 <div>
@@ -143,7 +178,10 @@ export default function StudentsPage() {
                         Administra la información de los estudiantes registrados en el sistema.
                     </p>
                 </div>
-                <Button className="bg-gradient-to-r from-soft-blue to-soft-blue-600 hover:from-soft-blue-600 hover:to-soft-blue-700 text-white">
+                <Button
+                    onClick={handleCreateStudent}
+                    className="bg-gradient-to-r from-soft-blue to-soft-blue-600 hover:from-soft-blue-600 hover:to-soft-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                >
                     <Plus className="h-4 w-4 mr-2" />
                     Nuevo Alumno
                 </Button>
@@ -374,6 +412,7 @@ export default function StudentsPage() {
                             </p>
                             {!searchTerm && (
                                 <Button
+                                    onClick={handleCreateStudent}
                                     variant="outline"
                                     size="sm"
                                     className="mt-3 border-soft-blue text-soft-blue hover:bg-soft-blue hover:text-white"
