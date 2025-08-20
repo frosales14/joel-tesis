@@ -4,6 +4,7 @@ export interface Gasto {
     id_gasto: number;
     nombre_gasto: string;
     cantidad_gasto: number;
+    id_familiar: number; // NEW: Required foreign key to familiar (matching familiares schema)
 }
 
 export interface Familiar {
@@ -12,8 +13,7 @@ export interface Familiar {
     edad_familiar?: number;
     parentesco_familiar?: string;
     ingreso_familiar?: number;
-    id_gasto?: number;
-    gasto?: Gasto; // For joined queries
+    gastos?: Gasto[]; // NEW: One-to-many relationship with gastos
 }
 
 export interface Alumno {
@@ -54,7 +54,8 @@ export interface CreateAlumnoData {
     motivo_ingreso?: string;
     situacion_familiar?: string;
     situacion_actual?: string;
-    id_familiar?: number;
+    id_familiar?: number; // Keep for backwards compatibility (primary familiar)
+    familiares_ids?: number[]; // NEW: Array of familiar IDs for many-to-many relationship
 }
 
 export interface UpdateAlumnoData extends Partial<CreateAlumnoData> {

@@ -100,68 +100,159 @@ class StudentService {
         }
     }
 
-    // Get a single student by ID with all related data
+    // Get a single student by ID with all related familiares
     async getStudentById(id: number): Promise<AlumnoWithFamiliar | null> {
         try {
-            const { data, error } = await supabase
+            // Get the student with primary familiar
+            const { data: studentData, error: studentError } = await supabase
                 .from('alumno')
                 .select(`
-          *,
-          familiar:id_familiar (
-            id_familiar,
-            nombre_familiar,
-            edad_familiar,
-            parentesco_familiar,
-            ingreso_familiar,
-            gasto:id_gasto (
-              id_gasto,
-              nombre_gasto,
-              cantidad_gasto
-            )
-          )
-        `)
+                    *,
+                    familiar:id_familiar (
+                        id_familiar,
+                        nombre_familiar,
+                        edad_familiar,
+                        parentesco_familiar,
+                        ingreso_familiar,
+                        gastos:gasto (
+                            id_gasto,
+                            nombre_gasto,
+                            cantidad_gasto,
+                            id_familiar
+                        )
+                    )
+                `)
                 .eq('id_alumno', id)
                 .single()
 
-            if (error) {
-                if (error.code === 'PGRST116') {
+            if (studentError) {
+                if (studentError.code === 'PGRST116') {
                     return null // Student not found
                 }
-                throw new Error(`Error fetching student: ${error.message}`)
+                throw new Error(`Error fetching student: ${studentError.message}`)
             }
 
-            return data as AlumnoWithFamiliar
+            // Get all familiares associated with this student through alumnoxfamiliar
+            const { data: familiaresData, error: familiaresError } = await supabase
+                .from('alumnoxfamiliar')
+                .select(`
+                    familiar:id_familiar (
+                        id_familiar,
+                        nombre_familiar,
+                        edad_familiar,
+                        parentesco_familiar,
+                        ingreso_familiar,
+                        gastos:gasto (
+                            id_gasto,
+                            nombre_gasto,
+                            cantidad_gasto,
+                            id_familiar
+                        )
+                    )
+                `)
+                .eq('id_alumno', id)
+
+            if (familiaresError) {
+                console.warn('Error fetching familiares for student:', familiaresError.message)
+            }
+
+            // Combine the data
+            const student = studentData as AlumnoWithFamiliar
+            if (familiaresData && familiaresData.length > 0) {
+                student.familiares = familiaresData
+                    .map((rel: any) => rel.familiar)
+                    .filter((f: any) => f !== null && f !== undefined) as Familiar[]
+            }
+
+            return student
         } catch (error) {
             console.error('Error in getStudentById:', error)
             throw error
         }
     }
 
-    // Create a new student
+    // Create a new student with multiple familiares
     async createStudent(studentData: CreateAlumnoData): Promise<Alumno> {
         try {
-            const { data, error } = await supabase
+            // Extract familiares_ids from the data
+            const { familiares_ids, ...alumnoData } = studentData
+
+            // Create the student first
+            const { data: studentResult, error: studentError } = await supabase
                 .from('alumno')
-                .insert([studentData])
+                .insert([alumnoData])
                 .select()
                 .single()
 
-            if (error) {
-                throw new Error(`Error creating student: ${error.message}`)
+            if (studentError) {
+                throw new Error(`Error creating student: ${studentError.message}`)
             }
 
-            return data as Alumno
+            const createdStudent = studentResult as Alumno
+
+            // If there are familiares to associate, create the relationships
+            if (familiares_ids && familiares_ids.length > 0) {
+                await this.associateFamiliaresToStudent(createdStudent.id_alumno, familiares_ids)
+            }
+
+            return createdStudent
         } catch (error) {
             console.error('Error in createStudent:', error)
             throw error
         }
     }
 
-    // Update an existing student
+    // Associate multiple familiares to a student
+    async associateFamiliaresToStudent(id_alumno: number, familiares_ids: number[]): Promise<void> {
+        try {
+            // Create entries in the alumnoxfamiliar table
+            const relationshipData = familiares_ids.map(id_familiar => ({
+                id_alumno,
+                id_familiar
+            }))
+
+            const { error } = await supabase
+                .from('alumnoxfamiliar')
+                .insert(relationshipData)
+
+            if (error) {
+                throw new Error(`Error associating familiares to student: ${error.message}`)
+            }
+        } catch (error) {
+            console.error('Error in associateFamiliaresToStudent:', error)
+            throw error
+        }
+    }
+
+    // Remove familiares from a student
+    async removeFamiliaresFromStudent(id_alumno: number, familiares_ids?: number[]): Promise<void> {
+        try {
+            let query = supabase
+                .from('alumnoxfamiliar')
+                .delete()
+                .eq('id_alumno', id_alumno)
+
+            if (familiares_ids && familiares_ids.length > 0) {
+                query = query.in('id_familiar', familiares_ids)
+            }
+
+            const { error } = await query
+
+            if (error) {
+                throw new Error(`Error removing familiares from student: ${error.message}`)
+            }
+        } catch (error) {
+            console.error('Error in removeFamiliaresFromStudent:', error)
+            throw error
+        }
+    }
+
+    // Update an existing student with familiares
     async updateStudent(studentData: UpdateAlumnoData): Promise<Alumno> {
         try {
-            const { id_alumno, ...updateData } = studentData
+            const { id_alumno, familiares_ids, ...updateData } = studentData
 
+            // Update the student basic information
             const { data, error } = await supabase
                 .from('alumno')
                 .update(updateData)
@@ -171,6 +262,17 @@ class StudentService {
 
             if (error) {
                 throw new Error(`Error updating student: ${error.message}`)
+            }
+
+            // If familiares_ids are provided, update the relationships
+            if (familiares_ids !== undefined) {
+                // Remove all existing relationships
+                await this.removeFamiliaresFromStudent(id_alumno)
+
+                // Add new relationships
+                if (familiares_ids.length > 0) {
+                    await this.associateFamiliaresToStudent(id_alumno, familiares_ids)
+                }
             }
 
             return data as Alumno
@@ -363,6 +465,33 @@ class StudentService {
             }
         } catch (error) {
             console.error('Error in getStudentStats:', error)
+            throw error
+        }
+    }
+
+    // Get all familiares for selection in forms
+    async getAllFamiliares(): Promise<Familiar[]> {
+        try {
+            const { data, error } = await supabase
+                .from('familiar')
+                .select(`
+                    *,
+                    gastos:gasto (
+                        id_gasto,
+                        nombre_gasto,
+                        cantidad_gasto,
+                        id_familiar
+                    )
+                `)
+                .order('nombre_familiar')
+
+            if (error) {
+                throw new Error(`Error fetching familiares: ${error.message}`)
+            }
+
+            return data as Familiar[]
+        } catch (error) {
+            console.error('Error in getAllFamiliares:', error)
             throw error
         }
     }

@@ -388,7 +388,11 @@ export default function StudentsPage() {
                                                 <DropdownMenuContent align="end">
                                                     <DropdownMenuLabel>Acciones</DropdownMenuLabel>
                                                     <DropdownMenuItem>Ver detalles</DropdownMenuItem>
-                                                    <DropdownMenuItem>Editar</DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                        onClick={() => navigate(`/dashboard/alumnos/crear?id=${student.id_alumno}`)}
+                                                    >
+                                                        Editar
+                                                    </DropdownMenuItem>
                                                     <DropdownMenuSeparator />
                                                     <DropdownMenuItem className="text-soft-coral">
                                                         Eliminar

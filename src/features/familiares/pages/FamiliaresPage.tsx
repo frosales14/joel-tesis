@@ -143,10 +143,10 @@ export default function FamiliaresPage() {
 
     const formatCurrency = (amount?: number) => {
         if (!amount) return 'No especificado'
-        return new Intl.NumberFormat('es-CO', {
+        return new Intl.NumberFormat('es-HN', {
             style: 'currency',
-            currency: 'COP',
-            minimumFractionDigits: 0
+            currency: 'HNL',
+            minimumFractionDigits: 2
         }).format(amount)
     }
 
@@ -402,7 +402,11 @@ export default function FamiliaresPage() {
                                                 <DropdownMenuContent align="end">
                                                     <DropdownMenuLabel>Acciones</DropdownMenuLabel>
                                                     <DropdownMenuItem>Ver detalles</DropdownMenuItem>
-                                                    <DropdownMenuItem>Editar</DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                        onClick={() => navigate(`/dashboard/familiares/crear?id=${familiar.id_familiar}`)}
+                                                    >
+                                                        Editar
+                                                    </DropdownMenuItem>
                                                     <DropdownMenuSeparator />
                                                     <DropdownMenuItem className="text-soft-coral">
                                                         Eliminar

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useSearchParams } from "react-router-dom"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -21,7 +21,8 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
 import { studentService } from "../services/studentService"
-import type { CreateAlumnoData, Familiar } from "../types"
+import type { CreateAlumnoData } from "../types"
+import { FamiliarDataTable, type Familiar } from "../../familiares"
 import { cn } from "@/lib/utils"
 
 // Form validation schema
@@ -33,18 +34,24 @@ const createStudentSchema = z.object({
     fecha_ingreso: z.date().optional(),
     motivo_ingreso: z.string().max(500, "El motivo es demasiado largo").optional(),
     situacion_familiar: z.string().max(500, "La descripción es demasiado larga").optional(),
-    situacion_actual: z.string().max(100, "La situación actual es demasiado larga").optional(),
-    id_familiar: z.number().optional(),
+    situacion_actual: z.string().max(500, "La situación actual es demasiado larga").optional(),
+    id_familiar: z.number().optional(), // Keep for backwards compatibility
 })
 
 type CreateStudentFormData = z.infer<typeof createStudentSchema>
 
 export default function CreateStudent() {
     const navigate = useNavigate()
+    const [searchParams] = useSearchParams()
+    const studentId = searchParams.get('id')
+    const isEditMode = !!studentId
+
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [familiares, setFamiliares] = useState<Familiar[]>([])
+    const [selectedFamiliares, setSelectedFamiliares] = useState<Familiar[]>([])
     const [loadingFamiliares, setLoadingFamiliares] = useState(true)
+    const [loadingStudent, setLoadingStudent] = useState(isEditMode)
 
     const form = useForm<CreateStudentFormData>({
         resolver: zodResolver(createStudentSchema),
@@ -56,51 +63,117 @@ export default function CreateStudent() {
             fecha_ingreso: new Date(),
             motivo_ingreso: "",
             situacion_familiar: "",
-            situacion_actual: "Activo",
+            situacion_actual: "",
             id_familiar: undefined,
         },
     })
 
-    // Load family members for selection
-    useEffect(() => {
-        const loadFamiliares = async () => {
-            try {
-                setLoadingFamiliares(true)
-                const familiaresData = await studentService.getFamiliares()
-                setFamiliares(familiaresData)
-            } catch (err) {
-                console.error("Error loading familiares:", err)
-            } finally {
-                setLoadingFamiliares(false)
-            }
-        }
+    // Load student data when in edit mode
+    const loadStudentData = async () => {
+        if (!studentId) return
 
+        try {
+            setLoadingStudent(true)
+            setError(null)
+
+            const student = await studentService.getStudentById(parseInt(studentId))
+            if (!student) {
+                setError('Estudiante no encontrado')
+                return
+            }
+
+            // Pre-fill the form with existing data
+            form.reset({
+                nombre_alumno: student.nombre_alumno,
+                edad_alumno: student.edad_alumno,
+                fecha_nacimiento: student.fecha_nacimiento ? new Date(student.fecha_nacimiento) : undefined,
+                grado_alumno: student.grado_alumno,
+                fecha_ingreso: student.fecha_ingreso ? new Date(student.fecha_ingreso) : undefined,
+                motivo_ingreso: student.motivo_ingreso || "",
+                situacion_familiar: student.situacion_familiar || "",
+                situacion_actual: student.situacion_actual || "",
+                id_familiar: student.id_familiar,
+            })
+
+            // Set selected familiares (from alumnoxfamiliar relationships)
+            if (student.familiares && student.familiares.length > 0) {
+                setSelectedFamiliares(student.familiares)
+            } else if (student.familiar) {
+                // Fallback to primary familiar if no relationships found
+                setSelectedFamiliares([student.familiar])
+            }
+
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Error al cargar el estudiante')
+        } finally {
+            setLoadingStudent(false)
+        }
+    }
+
+    // Load family members for selection
+    const loadFamiliares = async () => {
+        try {
+            setLoadingFamiliares(true)
+            const familiaresData = await studentService.getAllFamiliares()
+            setFamiliares(familiaresData)
+        } catch (err) {
+            console.error("Error loading familiares:", err)
+            setError("Error al cargar la lista de familiares")
+        } finally {
+            setLoadingFamiliares(false)
+        }
+    }
+
+    // Load data on component mount
+    useEffect(() => {
+        if (isEditMode) {
+            loadStudentData()
+        }
         loadFamiliares()
-    }, [])
+    }, [studentId, isEditMode])
 
     const onSubmit = async (data: CreateStudentFormData) => {
         try {
             setIsSubmitting(true)
             setError(null)
 
+            // Validate that at least one familiar is selected
+            if (selectedFamiliares.length === 0) {
+                setError("Debe seleccionar al menos un familiar responsable")
+                return
+            }
+
             // Convert dates to ISO strings for Supabase
             const submitData: CreateAlumnoData = {
                 ...data,
                 fecha_nacimiento: data.fecha_nacimiento?.toISOString().split('T')[0],
                 fecha_ingreso: data.fecha_ingreso?.toISOString().split('T')[0],
+                // Set the first selected familiar as the primary familiar for backwards compatibility
+                id_familiar: selectedFamiliares[0]?.id_familiar,
+                // Pass all selected familiares IDs for the many-to-many relationship
+                familiares_ids: selectedFamiliares.map(f => f.id_familiar),
             }
 
-            await studentService.createStudent(submitData)
+            if (isEditMode && studentId) {
+                // Update existing student
+                await studentService.updateStudent({
+                    id_alumno: parseInt(studentId),
+                    ...submitData
+                })
+            } else {
+                // Create new student
+                await studentService.createStudent(submitData)
+            }
 
             // Navigate back to students list with success message
             navigate('/dashboard/alumnos', {
                 state: {
-                    message: `Estudiante "${data.nombre_alumno}" creado exitosamente`,
+                    message: `Estudiante "${data.nombre_alumno}" ${isEditMode ? 'actualizado' : 'creado'} exitosamente con ${selectedFamiliares.length} familiar(es) asociado(s)`,
                     type: 'success'
                 }
             })
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Error al crear el estudiante')
+            setError(err instanceof Error ? err.message : `Error al ${isEditMode ? 'actualizar' : 'crear'} el estudiante`)
         } finally {
             setIsSubmitting(false)
         }
@@ -108,6 +181,39 @@ export default function CreateStudent() {
 
     const handleCancel = () => {
         navigate('/dashboard/alumnos')
+    }
+
+    // Show loading while loading student data in edit mode
+    if (loadingStudent) {
+        return (
+            <div className="space-y-6">
+                <div className="flex items-center space-x-4">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleCancel}
+                        className="border-muted-tan-300 hover:bg-muted-tan-50"
+                    >
+                        <ArrowLeft className="h-4 w-4 mr-2" />
+                        Volver
+                    </Button>
+                    <div>
+                        <h1 className="text-3xl font-bold bg-gradient-to-r from-soft-blue to-soft-blue-600 bg-clip-text text-transparent">
+                            Cargando Estudiante...
+                        </h1>
+                        <p className="text-gentle-slate-gray mt-2">
+                            Obteniendo información del estudiante
+                        </p>
+                    </div>
+                </div>
+                <div className="flex items-center justify-center py-12">
+                    <div className="flex items-center space-x-3">
+                        <Loader2 className="h-8 w-8 animate-spin text-soft-blue" />
+                        <span className="text-gentle-slate-gray">Cargando datos del estudiante...</span>
+                    </div>
+                </div>
+            </div>
+        )
     }
 
     return (
@@ -125,10 +231,13 @@ export default function CreateStudent() {
                 </Button>
                 <div>
                     <h1 className="text-3xl font-bold bg-gradient-to-r from-soft-blue to-soft-blue-600 bg-clip-text text-transparent">
-                        Crear Nuevo Estudiante
+                        {isEditMode ? 'Editar Estudiante' : 'Crear Nuevo Estudiante'}
                     </h1>
                     <p className="text-gentle-slate-gray mt-2">
-                        Registra un nuevo estudiante en el sistema
+                        {isEditMode
+                            ? 'Actualiza la información del estudiante en el sistema'
+                            : 'Registra un nuevo estudiante en el sistema'
+                        }
                     </p>
                 </div>
             </div>
@@ -335,61 +444,43 @@ export default function CreateStudent() {
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Situación Actual</FormLabel>
-                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                <FormControl>
-                                                    <SelectTrigger className="bg-white border-muted-tan-300">
-                                                        <SelectValue placeholder="Seleccionar situación" />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    <SelectItem value="Activo">Activo</SelectItem>
-                                                    <SelectItem value="Estudiando">Estudiando</SelectItem>
-                                                    <SelectItem value="En pausa">En pausa</SelectItem>
-                                                    <SelectItem value="Graduado">Graduado</SelectItem>
-                                                    <SelectItem value="Retirado">Retirado</SelectItem>
-                                                    <SelectItem value="Transferido">Transferido</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                {/* Family Member */}
-                                <FormField
-                                    control={form.control}
-                                    name="id_familiar"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Familiar Responsable</FormLabel>
-                                            <Select
-                                                onValueChange={(value) => field.onChange(parseInt(value))}
-                                                defaultValue={field.value?.toString()}
-                                                disabled={loadingFamiliares}
-                                            >
-                                                <FormControl>
-                                                    <SelectTrigger className="bg-white border-muted-tan-300">
-                                                        <SelectValue placeholder={
-                                                            loadingFamiliares ? "Cargando familiares..." : "Seleccionar familiar"
-                                                        } />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    {familiares.map((familiar) => (
-                                                        <SelectItem key={familiar.id_familiar} value={familiar.id_familiar.toString()}>
-                                                            {familiar.nombre_familiar}
-                                                            {familiar.parentesco_familiar && ` (${familiar.parentesco_familiar})`}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
+                                            <FormControl>
+                                                <Textarea
+                                                    placeholder="Describe la situación actual del estudiante (Ej: Activo, Estudiando, En pausa, Graduado, Retirado, etc.)..."
+                                                    className="bg-white border-muted-tan-300 focus:border-muted-sage-green min-h-[80px]"
+                                                    {...field}
+                                                />
+                                            </FormControl>
                                             <FormDescription>
-                                                Familiar principal responsable del estudiante
+                                                Opcional: Estado actual del estudiante en el programa
                                             </FormDescription>
                                             <FormMessage />
                                         </FormItem>
                                     )}
                                 />
+
+                                {/* Family Members Selection */}
+                                <div className="space-y-3">
+                                    <Label className="text-base font-medium text-gentle-slate-gray">
+                                        Familiares Responsables *
+                                    </Label>
+                                    <p className="text-sm text-muted-foreground">
+                                        Selecciona uno o más familiares responsables del estudiante. Puedes buscar y filtrar la lista.
+                                    </p>
+
+                                    <FamiliarDataTable
+                                        familiares={familiares}
+                                        selectedFamiliares={selectedFamiliares}
+                                        onSelectionChange={setSelectedFamiliares}
+                                        loading={loadingFamiliares}
+                                    />
+
+                                    {selectedFamiliares.length === 0 && error && error.includes("familiar") && (
+                                        <p className="text-sm text-red-600 mt-2">
+                                            ⚠️ Debe seleccionar al menos un familiar responsable
+                                        </p>
+                                    )}
+                                </div>
                             </CardContent>
                         </Card>
                     </div>
@@ -471,12 +562,12 @@ export default function CreateStudent() {
                             {isSubmitting ? (
                                 <>
                                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                    Creando...
+                                    {isEditMode ? 'Actualizando...' : 'Creando...'}
                                 </>
                             ) : (
                                 <>
                                     <Users className="h-4 w-4 mr-2" />
-                                    Crear Estudiante
+                                    {isEditMode ? 'Actualizar Estudiante' : 'Crear Estudiante'}
                                 </>
                             )}
                         </Button>

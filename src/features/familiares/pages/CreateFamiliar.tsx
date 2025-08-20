@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useSearchParams } from "react-router-dom"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -48,15 +48,18 @@ const commonRelationships = [
 
 export default function CreateFamiliar() {
     const navigate = useNavigate()
+    const [searchParams] = useSearchParams()
+    const familiarId = searchParams.get('id')
+    const isEditMode = !!familiarId
 
-    // Step 1: Basic familiar creation
+    // Step 1: Basic familiar creation/editing
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [createdFamiliar, setCreatedFamiliar] = useState<any>(null)
-    const [step, setStep] = useState<'basic' | 'financial'>('basic')
+    const [step, setStep] = useState<'basic' | 'financial'>(isEditMode ? 'financial' : 'basic')
+    const [isLoading, setIsLoading] = useState(isEditMode)
 
     // Step 2: Financial management
-    const [gastos, setGastos] = useState<Gasto[]>([])
     const [familiarGastos, setFamiliarGastos] = useState<Gasto[]>([])
     const [loadingGastos, setLoadingGastos] = useState(false)
     const [ingreso_familiar, setIngresoFamiliar] = useState<number | undefined>(undefined)
@@ -80,12 +83,53 @@ export default function CreateFamiliar() {
         },
     })
 
-    // Load existing gastos when moving to financial step
-    const loadGastos = async () => {
+    // Load existing familiar data when in edit mode
+    const loadFamiliarData = async () => {
+        if (!familiarId) return
+
+        try {
+            setIsLoading(true)
+            setError(null)
+
+            const familiar = await familiaresService.getFamiliarById(parseInt(familiarId))
+            if (!familiar) {
+                setError('Familiar no encontrado')
+                return
+            }
+
+            // Set the familiar data
+            setCreatedFamiliar(familiar)
+
+            // Pre-fill the form with existing data
+            familiarForm.reset({
+                nombre_familiar: familiar.nombre_familiar,
+                edad_familiar: familiar.edad_familiar,
+                parentesco_familiar: familiar.parentesco_familiar,
+            })
+
+            // Set income
+            setIngresoFamiliar(familiar.ingreso_familiar)
+
+            // Set gastos for this familiar
+            if (familiar.gastos) {
+                setFamiliarGastos(familiar.gastos)
+            }
+
+            // Load all gastos for reference
+            await loadAllGastos()
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Error al cargar el familiar')
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    // Load all gastos when moving to financial step
+    const loadAllGastos = async () => {
         try {
             setLoadingGastos(true)
-            const gastosData = await familiaresService.getAllGastos()
-            setGastos(gastosData)
+            // We don't need to store all gastos anymore since we only work with familiar-specific gastos
+            // This function can be used for future features if needed
         } catch (err) {
             console.error("Error loading gastos:", err)
         } finally {
@@ -93,7 +137,14 @@ export default function CreateFamiliar() {
         }
     }
 
-    // Step 1: Create basic familiar info
+    // Load data on component mount
+    useEffect(() => {
+        if (isEditMode) {
+            loadFamiliarData()
+        }
+    }, [familiarId, isEditMode])
+
+    // Step 1: Create or update basic familiar info
     const onSubmitBasicInfo = async (data: CreateFamiliarFormData) => {
         try {
             setIsSubmitting(true)
@@ -104,14 +155,26 @@ export default function CreateFamiliar() {
                 parentesco_familiar: data.parentesco_familiar?.trim() || undefined,
             }
 
-            const newFamiliar = await familiaresService.createFamiliar(submitData)
-            setCreatedFamiliar(newFamiliar)
+            let familiar
+            if (isEditMode && familiarId) {
+                // Update existing familiar
+                await familiaresService.updateFamiliar({
+                    id_familiar: parseInt(familiarId),
+                    ...submitData
+                })
+                familiar = await familiaresService.getFamiliarById(parseInt(familiarId))
+            } else {
+                // Create new familiar
+                familiar = await familiaresService.createFamiliar(submitData)
+            }
+
+            setCreatedFamiliar(familiar)
             setStep('financial')
 
             // Load gastos for the financial step
-            await loadGastos()
+            await loadAllGastos()
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Error al crear el familiar')
+            setError(err instanceof Error ? err.message : `Error al ${isEditMode ? 'actualizar' : 'crear'} el familiar`)
         } finally {
             setIsSubmitting(false)
         }
@@ -160,7 +223,7 @@ export default function CreateFamiliar() {
             // Navigate back with success message
             navigate('/dashboard/familiares', {
                 state: {
-                    message: `Familiar "${createdFamiliar.nombre_familiar}" creado exitosamente con información financiera`,
+                    message: `Familiar "${createdFamiliar.nombre_familiar}" ${isEditMode ? 'actualizado' : 'creado'} exitosamente con información financiera`,
                     type: 'success'
                 }
             })
@@ -176,7 +239,6 @@ export default function CreateFamiliar() {
         try {
             await familiaresService.deleteGasto(gastoId)
             setFamiliarGastos(prev => prev.filter(g => g.id_gasto !== gastoId))
-            setGastos(prev => prev.filter(g => g.id_gasto !== gastoId))
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Error al eliminar el gasto')
         }
@@ -192,10 +254,10 @@ export default function CreateFamiliar() {
     }
 
     const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('es-CO', {
+        return new Intl.NumberFormat('es-HN', {
             style: 'currency',
-            currency: 'COP',
-            minimumFractionDigits: 0
+            currency: 'HNL',
+            minimumFractionDigits: 2
         }).format(amount)
     }
 
@@ -330,12 +392,12 @@ export default function CreateFamiliar() {
                         {isSubmitting ? (
                             <>
                                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                Creando familiar...
+                                {isEditMode ? 'Actualizando familiar...' : 'Creando familiar...'}
                             </>
                         ) : (
                             <>
                                 <Users className="h-4 w-4 mr-2" />
-                                Crear Familiar
+                                {isEditMode ? 'Actualizar Familiar' : 'Crear Familiar'}
                             </>
                         )}
                     </Button>
@@ -382,7 +444,7 @@ export default function CreateFamiliar() {
                             className="bg-white border-muted-tan-300 focus:border-soft-blue"
                         />
                         <p className="text-xs text-muted-foreground">
-                            Ingresos mensuales en pesos colombianos
+                            Ingresos mensuales en lempiras hondureñas
                         </p>
                     </div>
                 </CardContent>
@@ -532,6 +594,39 @@ export default function CreateFamiliar() {
         </div>
     )
 
+    // Show loading while loading familiar data in edit mode
+    if (isLoading) {
+        return (
+            <div className="space-y-6">
+                <div className="flex items-center space-x-4">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigate('/dashboard/familiares')}
+                        className="border-muted-tan-300 hover:bg-muted-tan-50"
+                    >
+                        <ArrowLeft className="h-4 w-4 mr-2" />
+                        Volver
+                    </Button>
+                    <div>
+                        <h1 className="text-3xl font-bold bg-gradient-to-r from-soft-blue to-soft-blue-600 bg-clip-text text-transparent">
+                            Cargando Familiar...
+                        </h1>
+                        <p className="text-gentle-slate-gray mt-2">
+                            Obteniendo información del familiar
+                        </p>
+                    </div>
+                </div>
+                <div className="flex items-center justify-center py-12">
+                    <div className="flex items-center space-x-3">
+                        <Loader2 className="h-8 w-8 animate-spin text-soft-blue" />
+                        <span className="text-gentle-slate-gray">Cargando datos del familiar...</span>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -547,12 +642,21 @@ export default function CreateFamiliar() {
                 </Button>
                 <div>
                     <h1 className="text-3xl font-bold bg-gradient-to-r from-soft-blue to-soft-blue-600 bg-clip-text text-transparent">
-                        {step === 'basic' ? 'Crear Nuevo Familiar' : 'Gestión Financiera'}
+                        {isEditMode
+                            ? (step === 'basic' ? 'Editar Familiar' : 'Gestión Financiera')
+                            : (step === 'basic' ? 'Crear Nuevo Familiar' : 'Gestión Financiera')
+                        }
                     </h1>
                     <p className="text-gentle-slate-gray mt-2">
-                        {step === 'basic'
-                            ? 'Registra un nuevo familiar en el sistema'
-                            : `Administra la información financiera de ${createdFamiliar?.nombre_familiar}`
+                        {isEditMode
+                            ? (step === 'basic'
+                                ? 'Actualiza la información del familiar en el sistema'
+                                : `Administra la información financiera de ${createdFamiliar?.nombre_familiar}`
+                            )
+                            : (step === 'basic'
+                                ? 'Registra un nuevo familiar en el sistema'
+                                : `Administra la información financiera de ${createdFamiliar?.nombre_familiar}`
+                            )
                         }
                     </p>
                 </div>
