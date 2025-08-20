@@ -226,7 +226,7 @@ export function FamiliarDataTable({
                 </div>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="border-soft-blue text-soft-blue hover:bg-soft-blue hover:text-white">
+                        <Button variant="outline" className="border-soft-blue text-soft-blue hover:bg-soft-blue hover:text-neutral-off-white hover:border-soft-blue">
                             Columnas <ChevronDown className="ml-2 h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>
@@ -260,7 +260,7 @@ export function FamiliarDataTable({
             {/* Selection Summary */}
             {selectedFamiliares.length > 0 && (
                 <div className="flex items-center gap-2 p-3 bg-soft-blue-50 border border-soft-blue-200 rounded-lg">
-                    <Badge className="bg-soft-blue text-white">
+                    <Badge className="bg-soft-blue text-neutral-off-white">
                         {selectedFamiliares.length} seleccionado{selectedFamiliares.length !== 1 ? 's' : ''}
                     </Badge>
                     <span className="text-sm text-soft-blue-700">

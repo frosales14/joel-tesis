@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
-import { MoreHorizontal, Plus, Search, Filter, Loader2 } from "lucide-react"
+import { MoreHorizontal, Plus, Search, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
     Card,
@@ -180,7 +180,7 @@ export default function StudentsPage() {
                 </div>
                 <Button
                     onClick={handleCreateStudent}
-                    className="bg-gradient-to-r from-soft-blue to-soft-blue-600 hover:from-soft-blue-600 hover:to-soft-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                    className="bg-gradient-to-r from-soft-blue to-soft-blue-600 hover:from-soft-blue-600 hover:to-soft-blue-700 text-neutral-off-white shadow-lg hover:shadow-xl transition-all duration-200"
                 >
                     <Plus className="h-4 w-4 mr-2" />
                     Nuevo Alumno
@@ -268,14 +268,7 @@ export default function StudentsPage() {
                                 <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 animate-spin text-gentle-slate-gray" />
                             )}
                         </div>
-                        <Button
-                            variant="outline"
-                            className="border-soft-blue text-soft-blue hover:bg-soft-blue hover:text-white"
-                            disabled={loading}
-                        >
-                            <Filter className="h-4 w-4 mr-2" />
-                            Filtros
-                        </Button>
+
                     </div>
                 </CardContent>
             </Card>
@@ -387,7 +380,7 @@ export default function StudentsPage() {
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
                                                     <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                                                    <DropdownMenuItem>Ver detalles</DropdownMenuItem>
+                                                    <DropdownMenuItem>Generar Reporte</DropdownMenuItem>
                                                     <DropdownMenuItem
                                                         onClick={() => navigate(`/dashboard/alumnos/crear?id=${student.id_alumno}`)}
                                                     >
@@ -419,7 +412,7 @@ export default function StudentsPage() {
                                     onClick={handleCreateStudent}
                                     variant="outline"
                                     size="sm"
-                                    className="mt-3 border-soft-blue text-soft-blue hover:bg-soft-blue hover:text-white"
+                                    className="mt-3 border-soft-blue text-soft-blue hover:bg-soft-blue hover:text-neutral-off-white hover:border-soft-blue"
                                 >
                                     <Plus className="h-4 w-4 mr-2" />
                                     Agregar primer estudiante

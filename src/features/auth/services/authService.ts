@@ -125,7 +125,7 @@ class AuthService {
 
     // Get auth state changes for real-time updates
     onAuthStateChange(callback: (user: CustomUser | null) => void) {
-        return supabase.auth.onAuthStateChange((event, session) => {
+        return supabase.auth.onAuthStateChange((_, session) => {
             const user = session?.user ? this.mapSupabaseUser(session.user) : null
             callback(user)
         })

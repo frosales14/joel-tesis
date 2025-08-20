@@ -557,7 +557,7 @@ export default function CreateStudent() {
                         <Button
                             type="submit"
                             disabled={isSubmitting}
-                            className="bg-gradient-to-r from-soft-blue to-soft-blue-600 hover:from-soft-blue-600 hover:to-soft-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                            className="bg-gradient-to-r from-soft-blue to-soft-blue-600 hover:from-soft-blue-600 hover:to-soft-blue-700 text-neutral-off-white shadow-lg hover:shadow-xl transition-all duration-200"
                         >
                             {isSubmitting ? (
                                 <>

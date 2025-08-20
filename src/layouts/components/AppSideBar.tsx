@@ -1,4 +1,4 @@
-import { Users, Home, Settings, LogOut, UserCheck } from "lucide-react"
+import { Users, LogOut, UserCheck } from "lucide-react"
 import { Link, useLocation, useNavigate } from "react-router-dom"
 import {
     Sidebar,
@@ -31,13 +31,7 @@ const menuItems = [
     },
 ]
 
-const settingsItems = [
-    {
-        title: "Settings",
-        url: "/dashboard/settings",
-        icon: Settings,
-    },
-]
+
 
 export function AppSidebar() {
     const location = useLocation()
@@ -108,40 +102,6 @@ export function AppSidebar() {
                     </SidebarGroupContent>
                 </SidebarGroup>
 
-                {/* Settings */}
-                <SidebarGroup>
-                    <SidebarGroupLabel className="text-gentle-slate-gray font-semibold">
-                        Settings
-                    </SidebarGroupLabel>
-                    <SidebarGroupContent>
-                        <SidebarMenu>
-                            {settingsItems.map((item) => {
-                                const isActive = location.pathname === item.url
-
-                                return (
-                                    <SidebarMenuItem key={item.title}>
-                                        <SidebarMenuButton asChild isActive={isActive}>
-                                            <Link
-                                                to={item.url}
-                                                className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200 group ${isActive
-                                                    ? 'bg-gradient-to-r from-muted-sage-green to-muted-sage-green-600 text-white shadow-md'
-                                                    : 'text-gentle-slate-gray hover:text-muted-sage-green hover:bg-muted-sage-green-50'
-                                                    }`}
-                                            >
-                                                <item.icon className={`h-4 w-4 transition-transform group-hover:scale-110 ${isActive ? 'text-white' : ''
-                                                    }`} />
-                                                <span className="font-medium">{item.title}</span>
-                                                {isActive && (
-                                                    <div className="ml-auto w-2 h-2 bg-pale-sky-yellow rounded-full animate-pulse"></div>
-                                                )}
-                                            </Link>
-                                        </SidebarMenuButton>
-                                    </SidebarMenuItem>
-                                )
-                            })}
-                        </SidebarMenu>
-                    </SidebarGroupContent>
-                </SidebarGroup>
             </SidebarContent>
 
             {/* Enhanced Footer */}

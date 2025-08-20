@@ -3,8 +3,7 @@ import DashboardLayout from "./layouts/dashboard/DashboardLayout"
 import StudentsPage from "./features/student/pages/StudentsPage"
 import CreateStudent from "./features/student/pages/CreateStudent"
 import { FamiliaresPage, CreateFamiliar } from "./features/familiares"
-import DashboardHome from "./features/dashboard/pages/DashboardHome"
-import { LoginPage, RegisterPage } from "./features/auth"
+import { LoginPage } from "./features/auth"
 import { NotFound } from "./shared"
 import ProtectedRoute from "./components/ProtectedRoute"
 
@@ -27,9 +26,6 @@ export const appRouter = createBrowserRouter([
         children: [
             {
                 index: true,
-                element: <DashboardHome />,
-            },
-            {
                 path: 'alumnos',
                 element: <StudentsPage />,
             },
@@ -45,11 +41,6 @@ export const appRouter = createBrowserRouter([
                 path: 'familiares/crear',
                 element: <CreateFamiliar />,
             },
-            // Add more protected routes here as needed
-            // {
-            //   path: 'settings',
-            //   element: <SettingsPage />,
-            // },
         ]
     },
 

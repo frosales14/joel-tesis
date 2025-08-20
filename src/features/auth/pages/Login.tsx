@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -36,7 +36,7 @@ function Login() {
         e.preventDefault();
         try {
             await login(formData);
-            navigate('/dashboard'); // Redirect to home after successful login
+            navigate('/dashboard/alumnos'); // Redirect to home after successful login
         } catch (error) {
             // Error is handled by the useAuth hook
             console.error('Login failed:', error);
@@ -67,7 +67,7 @@ function Login() {
                         </div>
                         <div className="space-y-3">
                             <CardDescription className=" text-base">
-                                Inicia sesión en tu cuenta para continuar tu viaje
+                                Inicia sesión en tu cuenta para hacer la diferencia
                             </CardDescription>
                         </div>
                     </CardHeader>
@@ -112,7 +112,7 @@ function Login() {
                                 variant="default"
                                 disabled={isLoading}
                                 size="lg"
-                                className="w-full bg-gradient-to-r from-soft-blue to-soft-blue-600 hover:from-soft-blue-600 hover:to-soft-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 font-semibold"
+                                className="w-full "
                             >
                                 {isLoading ? (
                                     <div className="flex items-center space-x-2">
@@ -122,20 +122,12 @@ function Login() {
                                 ) : (
                                     <>
                                         <span>Iniciar Sesión</span>
-                                        <span className="ml-2">🚀</span>
                                     </>
                                 )}
                             </Button>
                         </form>
 
-                        <div className="mt-8 text-center">
-                            <p className="text-gentle-slate-gray">
-                                No tienes una cuenta?{' '}
-                                <Button variant="link" asChild className="p-0 h-auto text-soft-coral hover:text-soft-coral-600 font-semibold">
-                                    <Link to="/register">Crea una aquí</Link>
-                                </Button>
-                            </p>
-                        </div>
+
 
 
                     </CardContent>
