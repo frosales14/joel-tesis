@@ -4,6 +4,7 @@ export interface Gasto {
     id_gasto: number;
     nombre_gasto: string;
     cantidad_gasto: number;
+    id_familiar: number; // NEW: Foreign key to familiar
 }
 
 export interface Familiar {
@@ -12,13 +13,12 @@ export interface Familiar {
     edad_familiar?: number;
     parentesco_familiar?: string;
     ingreso_familiar?: number;
-    id_gasto?: number;
-    gasto?: Gasto; // For joined queries
+    gastos?: Gasto[]; // NEW: One-to-many relationship with gastos
 }
 
 // Extended type for display purposes with joined data
-export interface FamiliarWithGasto extends Familiar {
-    gasto?: Gasto;
+export interface FamiliarWithGastos extends Familiar {
+    gastos?: Gasto[]; // Multiple gastos for this familiar
     alumnos?: Array<{
         id_alumno: number;
         nombre_alumno: string;
@@ -31,7 +31,6 @@ export interface CreateFamiliarData {
     edad_familiar?: number;
     parentesco_familiar?: string;
     ingreso_familiar?: number;
-    id_gasto?: number;
 }
 
 export interface UpdateFamiliarData extends Partial<CreateFamiliarData> {
@@ -41,6 +40,7 @@ export interface UpdateFamiliarData extends Partial<CreateFamiliarData> {
 export interface CreateGastoData {
     nombre_gasto: string;
     cantidad_gasto: number;
+    id_familiar: number; // NEW: Required familiar reference
 }
 
 export interface UpdateGastoData extends Partial<CreateGastoData> {
@@ -58,7 +58,7 @@ export interface FamiliarFilters {
 
 // API response types
 export interface FamiliaresResponse {
-    familiares: FamiliarWithGasto[];
+    familiares: FamiliarWithGastos[];
     total: number;
     page: number;
     pageSize: number;

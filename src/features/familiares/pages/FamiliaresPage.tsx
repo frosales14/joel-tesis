@@ -29,13 +29,13 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { familiaresService } from "../services/familiaresService"
-import type { FamiliarWithGasto, FamiliarFilters, FamiliarStats } from "../types"
+import type { FamiliarWithGastos, FamiliarFilters, FamiliarStats } from "../types"
 
 export default function FamiliaresPage() {
     const navigate = useNavigate()
     const location = useLocation()
     const [searchTerm, setSearchTerm] = useState("")
-    const [familiares, setFamiliares] = useState<FamiliarWithGasto[]>([])
+    const [familiares, setFamiliares] = useState<FamiliarWithGastos[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [totalFamiliares, setTotalFamiliares] = useState(0)
@@ -366,20 +366,26 @@ export default function FamiliaresPage() {
                                         </TableCell>
                                         <TableCell>
                                             <span className={`font-medium ${familiar.ingreso_familiar && familiar.ingreso_familiar > 0
-                                                    ? 'text-muted-sage-green'
-                                                    : 'text-muted-tan-600'
+                                                ? 'text-muted-sage-green'
+                                                : 'text-muted-tan-600'
                                                 }`}>
                                                 {formatCurrency(familiar.ingreso_familiar)}
                                             </span>
                                         </TableCell>
                                         <TableCell>
-                                            {familiar.gasto ? (
+                                            {familiar.gastos && familiar.gastos.length > 0 ? (
                                                 <div className="text-sm">
                                                     <div className="font-medium text-gentle-slate-gray">
-                                                        {familiar.gasto.nombre_gasto}
+                                                        {familiar.gastos.length === 1
+                                                            ? familiar.gastos[0].nombre_gasto
+                                                            : `${familiar.gastos.length} gastos`
+                                                        }
                                                     </div>
                                                     <div className="text-xs text-warm-peach-600">
-                                                        {formatCurrency(familiar.gasto.cantidad_gasto)}
+                                                        {familiar.gastos.length === 1
+                                                            ? formatCurrency(familiar.gastos[0].cantidad_gasto)
+                                                            : `Total: ${formatCurrency(familiar.gastos.reduce((sum, g) => sum + g.cantidad_gasto, 0))}`
+                                                        }
                                                     </div>
                                                 </div>
                                             ) : (

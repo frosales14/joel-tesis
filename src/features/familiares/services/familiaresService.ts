@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import type {
     Familiar,
-    FamiliarWithGasto,
+    FamiliarWithGastos,
     CreateFamiliarData,
     UpdateFamiliarData,
     Gasto,
@@ -38,13 +38,8 @@ class FamiliaresService {
                     query = query.lte('ingreso_familiar', filters.ingreso_max)
                 }
 
-                if (filters.has_gasto !== undefined) {
-                    if (filters.has_gasto) {
-                        query = query.not('id_gasto', 'is', null)
-                    } else {
-                        query = query.is('id_gasto', null)
-                    }
-                }
+                // Note: has_gasto filter will be handled differently now
+                // since gastos are in a separate table linked by id_familiar
 
                 return query
             }
@@ -61,15 +56,16 @@ class FamiliaresService {
                 throw new Error(`Error getting count: ${countError.message}`)
             }
 
-            // Get data with pagination
+            // Get data with pagination and gastos
             let dataQuery = supabase
                 .from('familiar')
                 .select(`
           *,
-          gasto:id_gasto (
+          gastos:gasto (
             id_gasto,
             nombre_gasto,
-            cantidad_gasto
+            cantidad_gasto,
+            id_familiar
           )
         `)
 
@@ -84,7 +80,7 @@ class FamiliaresService {
             }
 
             return {
-                familiares: data as FamiliarWithGasto[],
+                familiares: data as FamiliarWithGastos[],
                 total: count || 0,
                 page,
                 pageSize
@@ -96,16 +92,17 @@ class FamiliaresService {
     }
 
     // Get a single familiar by ID with all related data
-    async getFamiliarById(id: number): Promise<FamiliarWithGasto | null> {
+    async getFamiliarById(id: number): Promise<FamiliarWithGastos | null> {
         try {
             const { data, error } = await supabase
                 .from('familiar')
                 .select(`
           *,
-          gasto:id_gasto (
+          gastos:gasto (
             id_gasto,
             nombre_gasto,
-            cantidad_gasto
+            cantidad_gasto,
+            id_familiar
           )
         `)
                 .eq('id_familiar', id)
@@ -118,7 +115,7 @@ class FamiliaresService {
                 throw new Error(`Error fetching familiar: ${error.message}`)
             }
 
-            return data as FamiliarWithGasto
+            return data as FamiliarWithGastos
         } catch (error) {
             console.error('Error in getFamiliarById:', error)
             throw error
@@ -185,8 +182,28 @@ class FamiliaresService {
         }
     }
 
-    // Get all gastos
-    async getGastos(): Promise<Gasto[]> {
+    // Get all gastos for a specific familiar
+    async getGastosByFamiliar(id_familiar: number): Promise<Gasto[]> {
+        try {
+            const { data, error } = await supabase
+                .from('gasto')
+                .select('*')
+                .eq('id_familiar', id_familiar)
+                .order('nombre_gasto')
+
+            if (error) {
+                throw new Error(`Error fetching gastos: ${error.message}`)
+            }
+
+            return data as Gasto[]
+        } catch (error) {
+            console.error('Error in getGastosByFamiliar:', error)
+            throw error
+        }
+    }
+
+    // Get all gastos (for reference, not tied to any familiar)
+    async getAllGastos(): Promise<Gasto[]> {
         try {
             const { data, error } = await supabase
                 .from('gasto')
@@ -199,7 +216,7 @@ class FamiliaresService {
 
             return data as Gasto[]
         } catch (error) {
-            console.error('Error in getGastos:', error)
+            console.error('Error in getAllGastos:', error)
             throw error
         }
     }
@@ -306,11 +323,10 @@ class FamiliaresService {
                     .not('ingreso_familiar', 'is', null)
                     .gt('ingreso_familiar', 0),
 
-                // Familiares with expenses
+                // Get distinct familiares that have gastos
                 supabase
-                    .from('familiar')
-                    .select('id_familiar', { count: 'exact', head: true })
-                    .not('id_gasto', 'is', null),
+                    .from('gasto')
+                    .select('id_familiar', { count: 'exact', head: true }),
 
                 // Average income calculation
                 supabase
