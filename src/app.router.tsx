@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from "react-router-dom"
 import DashboardLayout from "./layouts/dashboard/DashboardLayout"
 import StudentsPage from "./features/student/pages/StudentsPage"
 import CreateStudent from "./features/student/pages/CreateStudent"
+import { FamiliaresPage, CreateFamiliar } from "./features/familiares"
 import DashboardHome from "./features/dashboard/pages/DashboardHome"
 import { LoginPage, RegisterPage } from "./features/auth"
 import { NotFound } from "./shared"
@@ -35,6 +36,14 @@ export const appRouter = createBrowserRouter([
             {
                 path: 'alumnos/crear',
                 element: <CreateStudent />,
+            },
+            {
+                path: 'familiares',
+                element: <FamiliaresPage />,
+            },
+            {
+                path: 'familiares/crear',
+                element: <CreateFamiliar />,
             },
             // Add more protected routes here as needed
             // {

@@ -1,4 +1,4 @@
-import { Users, Home, Settings, LogOut } from "lucide-react"
+import { Users, Home, Settings, LogOut, UserCheck } from "lucide-react"
 import { Link, useLocation, useNavigate } from "react-router-dom"
 import {
     Sidebar,
@@ -23,6 +23,11 @@ const menuItems = [
         title: "Alumnos",
         url: "/dashboard/alumnos",
         icon: Users,
+    },
+    {
+        title: "Familiares",
+        url: "/dashboard/familiares",
+        icon: UserCheck,
     },
 ]
 
