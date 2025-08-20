@@ -112,15 +112,18 @@ function Login() {
                                 variant="default"
                                 disabled={isLoading}
                                 size="lg"
-                                className="w-full text-white"
+                                className="w-full bg-gradient-to-r from-soft-blue to-soft-blue-600 hover:from-soft-blue-600 hover:to-soft-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 font-semibold"
                             >
                                 {isLoading ? (
                                     <div className="flex items-center space-x-2">
                                         <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
-                                        <span>Signing in...</span>
+                                        <span>Iniciando sesión...</span>
                                     </div>
                                 ) : (
-                                    'Sign In'
+                                    <>
+                                        <span>Iniciar Sesión</span>
+                                        <span className="ml-2">🚀</span>
+                                    </>
                                 )}
                             </Button>
                         </form>

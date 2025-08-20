@@ -20,12 +20,6 @@ import logoImg from "@/assets/san-logo.png"
 // Menu items
 const menuItems = [
     {
-        title: "Dashboard",
-        url: "/dashboard",
-        icon: Home,
-        isActive: true,
-    },
-    {
         title: "Alumnos",
         url: "/dashboard/alumnos",
         icon: Users,
@@ -55,19 +49,19 @@ export function AppSidebar() {
     }
 
     return (
-        <Sidebar className="border-r border-muted-tan-200">
-            {/* Header */}
-            <SidebarHeader className="p-4 border-b border-muted-tan-200">
+        <Sidebar className="border-r border-muted-tan-200 bg-gradient-to-b from-white via-warm-peach-25 to-neutral-off-white">
+            {/* Enhanced Header */}
+            <SidebarHeader className="p-4 border-b border-muted-tan-200 bg-gradient-to-r from-soft-blue-50 to-warm-peach-50">
                 <div className="flex items-center space-x-3">
-                    <img
-                        src={logoImg}
-                        alt="Sociedad Amigos de los Niños"
-                        className="h-10 w-auto object-contain"
-                    />
-                    <div className="flex flex-col">
-                        <h2 className="text-lg font-bold text-soft-blue">SAN Dashboard</h2>
-                        <p className="text-xs text-gentle-slate-gray">Management System</p>
+                    <div className="relative">
+                        <div className="absolute inset-0 bg-soft-blue-100 rounded-xl blur-md opacity-50"></div>
+                        <img
+                            src={logoImg}
+                            alt="Sociedad Amigos de los Niños"
+                            className="relative w-auto object-contain bg-chart-1/80 rounded-lg p-2 shadow-sm"
+                        />
                     </div>
+
                 </div>
             </SidebarHeader>
 
@@ -89,10 +83,17 @@ export function AppSidebar() {
                                         <SidebarMenuButton asChild isActive={isActive}>
                                             <Link
                                                 to={item.url}
-                                                className="flex items-center space-x-2 text-gentle-slate-gray hover:text-soft-blue"
+                                                className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200 group ${isActive
+                                                    ? 'bg-gradient-to-r from-soft-blue to-soft-blue-600 text-white shadow-md'
+                                                    : 'text-gentle-slate-gray hover:text-soft-blue hover:bg-soft-blue-50'
+                                                    }`}
                                             >
-                                                <item.icon className="h-4 w-4" />
-                                                <span>{item.title}</span>
+                                                <item.icon className={`h-4 w-4 transition-transform group-hover:scale-110 ${isActive ? 'text-white' : ''
+                                                    }`} />
+                                                <span className="font-medium">{item.title}</span>
+                                                {isActive && (
+                                                    <div className="ml-auto w-2 h-2 bg-warm-peach rounded-full animate-pulse"></div>
+                                                )}
                                             </Link>
                                         </SidebarMenuButton>
                                     </SidebarMenuItem>
@@ -117,10 +118,17 @@ export function AppSidebar() {
                                         <SidebarMenuButton asChild isActive={isActive}>
                                             <Link
                                                 to={item.url}
-                                                className="flex items-center space-x-2 text-gentle-slate-gray hover:text-soft-blue"
+                                                className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200 group ${isActive
+                                                    ? 'bg-gradient-to-r from-muted-sage-green to-muted-sage-green-600 text-white shadow-md'
+                                                    : 'text-gentle-slate-gray hover:text-muted-sage-green hover:bg-muted-sage-green-50'
+                                                    }`}
                                             >
-                                                <item.icon className="h-4 w-4" />
-                                                <span>{item.title}</span>
+                                                <item.icon className={`h-4 w-4 transition-transform group-hover:scale-110 ${isActive ? 'text-white' : ''
+                                                    }`} />
+                                                <span className="font-medium">{item.title}</span>
+                                                {isActive && (
+                                                    <div className="ml-auto w-2 h-2 bg-pale-sky-yellow rounded-full animate-pulse"></div>
+                                                )}
                                             </Link>
                                         </SidebarMenuButton>
                                     </SidebarMenuItem>
@@ -131,33 +139,40 @@ export function AppSidebar() {
                 </SidebarGroup>
             </SidebarContent>
 
-            {/* Footer */}
+            {/* Enhanced Footer */}
             <SidebarFooter className="p-4 border-t border-muted-tan-200">
-                <Card className="bg-warm-peach-50 border-warm-peach-200">
-                    <CardContent className="p-3">
-                        <div className="flex items-center space-x-3 mb-3">
-                            <div className="h-8 w-8 bg-soft-blue rounded-full flex items-center justify-center">
-                                <span className="text-white text-sm font-semibold">
-                                    {user?.name?.charAt(0) || user?.email?.charAt(0) || 'U'}
-                                </span>
+                <Card className="bg-gradient-to-br from-warm-peach-50 via-warm-peach-25 to-neutral-off-white border-warm-peach-200 shadow-lg">
+                    <CardContent className="p-4">
+                        <div className="flex items-center space-x-3 mb-4">
+                            <div className="relative">
+                                <div className="absolute inset-0 bg-soft-blue-300 rounded-full blur-sm opacity-50"></div>
+                                <div className="relative h-10 w-10 bg-gradient-to-br from-soft-blue to-soft-blue-600 rounded-full flex items-center justify-center shadow-md">
+                                    <span className="text-white text-sm font-bold">
+                                        {user?.name?.charAt(0) || user?.email?.charAt(0) || 'U'}
+                                    </span>
+                                </div>
                             </div>
                             <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-gentle-slate-gray truncate">
-                                    {user?.name || 'User'}
+                                <p className="text-sm font-semibold text-gentle-slate-gray truncate">
+                                    {user?.name || 'Usuario'}
                                 </p>
                                 <p className="text-xs text-muted-tan-600 truncate">
                                     {user?.email}
                                 </p>
+                                <div className="flex items-center mt-1">
+                                    <div className="h-2 w-2 bg-muted-sage-green rounded-full mr-1 animate-pulse"></div>
+                                    <span className="text-xs text-muted-sage-green font-medium">En línea</span>
+                                </div>
                             </div>
                         </div>
                         <Button
                             onClick={handleLogout}
                             variant="outline"
                             size="sm"
-                            className="w-full text-xs border-soft-coral text-soft-coral hover:bg-soft-coral hover:text-white"
+                            className="w-full text-xs border-soft-coral text-soft-coral hover:bg-gradient-to-r hover:from-soft-coral hover:to-soft-coral-600 hover:text-white hover:border-soft-coral-600 transition-all duration-200 shadow-sm"
                         >
-                            <LogOut className="h-3 w-3 mr-1" />
-                            Sign Out
+                            <LogOut className="h-3 w-3 mr-2" />
+                            Cerrar Sesión
                         </Button>
                     </CardContent>
                 </Card>

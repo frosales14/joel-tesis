@@ -1,5 +1,5 @@
-import { useState } from "react"
-import { MoreHorizontal, Plus, Search, Filter } from "lucide-react"
+import { useState, useEffect } from "react"
+import { MoreHorizontal, Plus, Search, Filter, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
     Card,
@@ -26,81 +26,109 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-
-// Mock data for students
-const studentsData = [
-    {
-        id: "1",
-        nombre: "Juan Pérez",
-        email: "juan.perez@email.com",
-        edad: 20,
-        carrera: "Ingeniería de Sistemas",
-        fechaIngreso: "2023-01-15",
-        estado: "Activo",
-        telefono: "+57 301 234 5678",
-    },
-    {
-        id: "2",
-        nombre: "María González",
-        email: "maria.gonzalez@email.com",
-        edad: 19,
-        carrera: "Psicología",
-        fechaIngreso: "2023-02-20",
-        estado: "Activo",
-        telefono: "+57 302 345 6789",
-    },
-    {
-        id: "3",
-        nombre: "Carlos Rodríguez",
-        email: "carlos.rodriguez@email.com",
-        edad: 21,
-        carrera: "Administración",
-        fechaIngreso: "2023-01-10",
-        estado: "Inactivo",
-        telefono: "+57 303 456 7890",
-    },
-    {
-        id: "4",
-        nombre: "Ana Martínez",
-        email: "ana.martinez@email.com",
-        edad: 22,
-        carrera: "Diseño Gráfico",
-        fechaIngreso: "2023-03-05",
-        estado: "Activo",
-        telefono: "+57 304 567 8901",
-    },
-    {
-        id: "5",
-        nombre: "Luis Hernández",
-        email: "luis.hernandez@email.com",
-        edad: 20,
-        carrera: "Ingeniería Civil",
-        fechaIngreso: "2023-02-15",
-        estado: "Activo",
-        telefono: "+57 305 678 9012",
-    },
-]
+import { studentService } from "../services/studentService"
+import type { AlumnoWithFamiliar, StudentFilters } from "../types"
 
 export default function StudentsPage() {
     const [searchTerm, setSearchTerm] = useState("")
-    const [students] = useState(studentsData)
+    const [students, setStudents] = useState<AlumnoWithFamiliar[]>([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
+    const [totalStudents, setTotalStudents] = useState(0)
+    const [stats, setStats] = useState({
+        totalStudents: 0,
+        activeStudents: 0,
+        recentStudents: 0,
+        uniqueGrades: 0
+    })
 
-    const filteredStudents = students.filter(student =>
-        student.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        student.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        student.carrera.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    // Load students data
+    const loadStudents = async (filters: StudentFilters = {}, page: number = 1) => {
+        try {
+            setLoading(true)
+            setError(null)
 
-    const getStatusBadge = (estado: string) => {
-        return estado === "Activo" ? (
-            <Badge className="bg-muted-sage-green-100 text-muted-sage-green-700 hover:bg-muted-sage-green-200">
-                Activo
-            </Badge>
-        ) : (
-            <Badge variant="secondary" className="bg-muted-tan-100 text-muted-tan-700">
-                Inactivo
-            </Badge>
-        )
+            const response = await studentService.getStudents(filters, page, 10)
+            setStudents(response.students)
+            setTotalStudents(response.total)
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Error loading students')
+            console.error('Error loading students:', err)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    // Load dashboard stats
+    const loadStats = async () => {
+        try {
+            const dashboardStats = await studentService.getStudentStats()
+            setStats(dashboardStats)
+        } catch (err) {
+            console.error('Error loading stats:', err)
+        }
+    }
+
+    // Load data on component mount
+    useEffect(() => {
+        loadStudents()
+        loadStats()
+    }, [])
+
+    // Handle search with debouncing
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            if (searchTerm.trim()) {
+                loadStudents({ searchTerm: searchTerm.trim() })
+            } else {
+                loadStudents()
+            }
+        }, 500)
+
+        return () => clearTimeout(timeoutId)
+    }, [searchTerm])
+
+    const getStatusBadge = (situacion_actual?: string) => {
+        if (!situacion_actual) {
+            return (
+                <Badge variant="secondary" className="bg-muted-tan-100 text-muted-tan-700">
+                    Sin información
+                </Badge>
+            )
+        }
+
+        const status = situacion_actual.toLowerCase()
+        if (status.includes('activo') || status.includes('estudiando')) {
+            return (
+                <Badge className="bg-muted-sage-green-100 text-muted-sage-green-700 hover:bg-muted-sage-green-200">
+                    {situacion_actual}
+                </Badge>
+            )
+        } else if (status.includes('inactivo') || status.includes('retirado')) {
+            return (
+                <Badge variant="destructive" className="bg-soft-coral-100 text-soft-coral-700">
+                    {situacion_actual}
+                </Badge>
+            )
+        } else {
+            return (
+                <Badge variant="outline" className="bg-warm-peach-50 text-warm-peach-700">
+                    {situacion_actual}
+                </Badge>
+            )
+        }
+    }
+
+    const formatDate = (dateString?: string) => {
+        if (!dateString) return 'No especificada'
+        return new Date(dateString).toLocaleDateString('es-ES')
+    }
+
+    const getGradeText = (grado?: number) => {
+        if (!grado) return 'No especificado'
+        if (grado <= 5) return `${grado}° Primaria`
+        if (grado <= 11) return `${grado}° Bachillerato`
+        return `Grado ${grado}`
     }
 
     return (
@@ -130,7 +158,9 @@ export default function StudentsPage() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-soft-blue">{students.length}</div>
+                        <div className="text-2xl font-bold text-soft-blue">
+                            {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : stats.totalStudents}
+                        </div>
                         <p className="text-xs text-soft-blue-600">Estudiantes registrados</p>
                     </CardContent>
                 </Card>
@@ -143,7 +173,7 @@ export default function StudentsPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold text-muted-sage-green">
-                            {students.filter(s => s.estado === "Activo").length}
+                            {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : stats.activeStudents}
                         </div>
                         <p className="text-xs text-muted-sage-green-600">Estudiantes activos</p>
                     </CardContent>
@@ -156,7 +186,9 @@ export default function StudentsPage() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-warm-peach-700">3</div>
+                        <div className="text-2xl font-bold text-warm-peach-700">
+                            {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : stats.recentStudents}
+                        </div>
                         <p className="text-xs text-warm-peach-600">Ingresos recientes</p>
                     </CardContent>
                 </Card>
@@ -164,14 +196,14 @@ export default function StudentsPage() {
                 <Card className="bg-gradient-to-br from-soft-coral-50 to-soft-coral-100 border-soft-coral-200">
                     <CardHeader className="pb-2">
                         <CardTitle className="text-sm font-medium text-soft-coral-700">
-                            Carreras
+                            Grados
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold text-soft-coral">
-                            {new Set(students.map(s => s.carrera)).size}
+                            {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : stats.uniqueGrades}
                         </div>
-                        <p className="text-xs text-soft-coral-600">Programas académicos</p>
+                        <p className="text-xs text-soft-coral-600">Niveles académicos</p>
                     </CardContent>
                 </Card>
             </div>
@@ -188,13 +220,21 @@ export default function StudentsPage() {
                         <div className="flex-1 relative">
                             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gentle-slate-gray h-4 w-4" />
                             <Input
-                                placeholder="Buscar por nombre, email o carrera..."
+                                placeholder="Buscar por nombre o situación actual..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="pl-10"
+                                disabled={loading}
                             />
+                            {loading && (
+                                <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 animate-spin text-gentle-slate-gray" />
+                            )}
                         </div>
-                        <Button variant="outline" className="border-soft-blue text-soft-blue hover:bg-soft-blue hover:text-white">
+                        <Button
+                            variant="outline"
+                            className="border-soft-blue text-soft-blue hover:bg-soft-blue hover:text-white"
+                            disabled={loading}
+                        >
                             <Filter className="h-4 w-4 mr-2" />
                             Filtros
                         </Button>
@@ -209,7 +249,8 @@ export default function StudentsPage() {
                         Lista de Alumnos
                     </CardTitle>
                     <CardDescription>
-                        {filteredStudents.length} de {students.length} estudiantes
+                        {students.length} de {totalStudents} estudiantes
+                        {searchTerm && ` (filtrados por "${searchTerm}")`}
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -218,39 +259,86 @@ export default function StudentsPage() {
                             <TableHeader>
                                 <TableRow>
                                     <TableHead className="w-[200px]">Nombre</TableHead>
-                                    <TableHead>Email</TableHead>
                                     <TableHead>Edad</TableHead>
-                                    <TableHead>Carrera</TableHead>
-                                    <TableHead>Estado</TableHead>
+                                    <TableHead>Grado</TableHead>
+                                    <TableHead>Situación Actual</TableHead>
                                     <TableHead>Fecha Ingreso</TableHead>
+                                    <TableHead>Familiar Principal</TableHead>
                                     <TableHead className="text-right">Acciones</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {filteredStudents.map((student) => (
-                                    <TableRow key={student.id}>
+                                {error && (
+                                    <TableRow>
+                                        <TableCell colSpan={7} className="text-center py-8">
+                                            <div className="text-soft-coral-600">
+                                                <p className="font-medium">Error al cargar los estudiantes</p>
+                                                <p className="text-sm text-gentle-slate-gray mt-1">{error}</p>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="mt-3"
+                                                    onClick={() => loadStudents()}
+                                                >
+                                                    Reintentar
+                                                </Button>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+
+                                {loading && !error && (
+                                    <TableRow>
+                                        <TableCell colSpan={7} className="text-center py-8">
+                                            <div className="flex items-center justify-center space-x-2">
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                                <span className="text-gentle-slate-gray">Cargando estudiantes...</span>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+
+                                {!loading && !error && students.map((student) => (
+                                    <TableRow key={student.id_alumno}>
                                         <TableCell className="font-medium">
                                             <div className="flex items-center space-x-3">
                                                 <div className="h-8 w-8 bg-soft-blue rounded-full flex items-center justify-center">
                                                     <span className="text-white text-sm font-semibold">
-                                                        {student.nombre.charAt(0)}
+                                                        {student.nombre_alumno.charAt(0)}
                                                     </span>
                                                 </div>
-                                                <span>{student.nombre}</span>
+                                                <span>{student.nombre_alumno}</span>
                                             </div>
                                         </TableCell>
-                                        <TableCell>{student.email}</TableCell>
-                                        <TableCell>{student.edad} años</TableCell>
+                                        <TableCell>
+                                            {student.edad_alumno ? `${student.edad_alumno} años` : 'No especificada'}
+                                        </TableCell>
                                         <TableCell>
                                             <Badge variant="outline" className="bg-muted-tan-50 text-muted-tan-700">
-                                                {student.carrera}
+                                                {getGradeText(student.grado_alumno)}
                                             </Badge>
                                         </TableCell>
                                         <TableCell>
-                                            {getStatusBadge(student.estado)}
+                                            {getStatusBadge(student.situacion_actual)}
                                         </TableCell>
                                         <TableCell>
-                                            {new Date(student.fechaIngreso).toLocaleDateString('es-ES')}
+                                            {formatDate(student.fecha_ingreso)}
+                                        </TableCell>
+                                        <TableCell>
+                                            {student.familiar ? (
+                                                <div className="text-sm">
+                                                    <div className="font-medium text-gentle-slate-gray">
+                                                        {student.familiar.nombre_familiar}
+                                                    </div>
+                                                    {student.familiar.parentesco_familiar && (
+                                                        <div className="text-xs text-muted-tan-600">
+                                                            {student.familiar.parentesco_familiar}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                <span className="text-muted-tan-600 text-sm">Sin familiar asignado</span>
+                                            )}
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <DropdownMenu>
@@ -276,11 +364,24 @@ export default function StudentsPage() {
                         </Table>
                     </div>
 
-                    {filteredStudents.length === 0 && (
+                    {!loading && !error && students.length === 0 && (
                         <div className="text-center py-8">
                             <p className="text-gentle-slate-gray">
-                                No se encontraron alumnos que coincidan con la búsqueda.
+                                {searchTerm
+                                    ? `No se encontraron alumnos que coincidan con "${searchTerm}".`
+                                    : "No hay estudiantes registrados en el sistema."
+                                }
                             </p>
+                            {!searchTerm && (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="mt-3 border-soft-blue text-soft-blue hover:bg-soft-blue hover:text-white"
+                                >
+                                    <Plus className="h-4 w-4 mr-2" />
+                                    Agregar primer estudiante
+                                </Button>
+                            )}
                         </div>
                     )}
                 </CardContent>

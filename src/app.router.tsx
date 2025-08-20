@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from "react-router-dom"
 import DashboardLayout from "./layouts/dashboard/DashboardLayout"
 import StudentsPage from "./features/student/pages/StudentsPage"
+import DashboardHome from "./features/dashboard/pages/DashboardHome"
 import { LoginPage, RegisterPage } from "./features/auth"
 import { NotFound } from "./shared"
 import ProtectedRoute from "./components/ProtectedRoute"
@@ -24,7 +25,7 @@ export const appRouter = createBrowserRouter([
         children: [
             {
                 index: true,
-                element: <Navigate to="alumnos" replace />,
+                element: <DashboardHome />,
             },
             {
                 path: 'alumnos',
