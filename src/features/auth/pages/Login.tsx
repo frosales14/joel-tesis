@@ -36,7 +36,7 @@ function Login() {
         e.preventDefault();
         try {
             await login(formData);
-            navigate('/'); // Redirect to home after successful login
+            navigate('/dashboard'); // Redirect to home after successful login
         } catch (error) {
             // Error is handled by the useAuth hook
             console.error('Login failed:', error);
