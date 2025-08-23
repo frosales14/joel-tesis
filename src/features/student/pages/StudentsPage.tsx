@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
-import { MoreHorizontal, Plus, Search, Loader2 } from "lucide-react"
+import { MoreHorizontal, Plus, Search, Loader2, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
     Card,
@@ -29,6 +29,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { studentService } from "../services/studentService"
+import { generateStudentReport } from "../utils/pdfGenerator"
 import type { AlumnoWithFamiliar, StudentFilters } from "../types"
 
 export default function StudentsPage() {
@@ -147,6 +148,22 @@ export default function StudentsPage() {
 
     const handleCreateStudent = () => {
         navigate('/dashboard/alumnos/crear')
+    }
+
+    const handleGenerateReport = async (student: AlumnoWithFamiliar) => {
+        try {
+            setLoading(true)
+            await generateStudentReport(student)
+            setSuccessMessage(`Reporte de ${student.nombre_alumno} generado exitosamente`)
+            // Auto-hide success message after 5 seconds
+            setTimeout(() => setSuccessMessage(null), 5000)
+        } catch (error) {
+            setError(error instanceof Error ? error.message : 'Error al generar el reporte')
+            // Auto-hide error message after 5 seconds
+            setTimeout(() => setError(null), 5000)
+        } finally {
+            setLoading(false)
+        }
     }
 
     return (
@@ -380,7 +397,13 @@ export default function StudentsPage() {
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
                                                     <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                                                    <DropdownMenuItem>Generar Reporte</DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                        onClick={() => handleGenerateReport(student)}
+                                                        className="cursor-pointer"
+                                                    >
+                                                        <FileText className="h-4 w-4 mr-2" />
+                                                        Generar Reporte
+                                                    </DropdownMenuItem>
                                                     <DropdownMenuItem
                                                         onClick={() => navigate(`/dashboard/alumnos/crear?id=${student.id_alumno}`)}
                                                     >
