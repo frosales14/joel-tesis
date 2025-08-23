@@ -64,17 +64,20 @@ class StudentService {
                 throw new Error(`Error getting count: ${countError.message}`)
             }
 
-            // Get data with pagination
+            // Get data with pagination - now query through junction table
             let dataQuery = supabase
                 .from('alumno')
                 .select(`
           *,
-          familiar:id_familiar (
+          familiares:alumnoxfamiliar (
             id_familiar,
-            nombre_familiar,
-            edad_familiar,
             parentesco_familiar,
-            ingreso_familiar
+            familiar:id_familiar (
+              id_familiar,
+              nombre_familiar,
+              edad_familiar,
+              ingreso_familiar
+            )
           )
         `)
 
@@ -103,22 +106,25 @@ class StudentService {
     // Get a single student by ID with all related familiares
     async getStudentById(id: number): Promise<AlumnoWithFamiliar | null> {
         try {
-            // Get the student with primary familiar
+            // Get the student with all familiares through junction table
             const { data: studentData, error: studentError } = await supabase
                 .from('alumno')
                 .select(`
                     *,
-                    familiar:id_familiar (
+                    familiares:alumnoxfamiliar (
                         id_familiar,
-                        nombre_familiar,
-                        edad_familiar,
                         parentesco_familiar,
-                        ingreso_familiar,
-                        gastos:gasto (
-                            id_gasto,
-                            nombre_gasto,
-                            cantidad_gasto,
-                            id_familiar
+                        familiar:id_familiar (
+                            id_familiar,
+                            nombre_familiar,
+                            edad_familiar,
+                            ingreso_familiar,
+                            gastos:gasto (
+                                id_gasto,
+                                nombre_gasto,
+                                cantidad_gasto,
+                                id_familiar
+                            )
                         )
                     )
                 `)
@@ -132,39 +138,7 @@ class StudentService {
                 throw new Error(`Error fetching student: ${studentError.message}`)
             }
 
-            // Get all familiares associated with this student through alumnoxfamiliar
-            const { data: familiaresData, error: familiaresError } = await supabase
-                .from('alumnoxfamiliar')
-                .select(`
-                    familiar:id_familiar (
-                        id_familiar,
-                        nombre_familiar,
-                        edad_familiar,
-                        parentesco_familiar,
-                        ingreso_familiar,
-                        gastos:gasto (
-                            id_gasto,
-                            nombre_gasto,
-                            cantidad_gasto,
-                            id_familiar
-                        )
-                    )
-                `)
-                .eq('id_alumno', id)
-
-            if (familiaresError) {
-                console.warn('Error fetching familiares for student:', familiaresError.message)
-            }
-
-            // Combine the data
-            const student = studentData as AlumnoWithFamiliar
-            if (familiaresData && familiaresData.length > 0) {
-                student.familiares = familiaresData
-                    .map((rel: any) => rel.familiar)
-                    .filter((f: any) => f !== null && f !== undefined) as Familiar[]
-            }
-
-            return student
+            return studentData as AlumnoWithFamiliar
         } catch (error) {
             console.error('Error in getStudentById:', error)
             throw error
@@ -174,8 +148,8 @@ class StudentService {
     // Create a new student with multiple familiares
     async createStudent(studentData: CreateAlumnoData): Promise<Alumno> {
         try {
-            // Extract familiares_ids from the data
-            const { familiares_ids, ...alumnoData } = studentData
+            // Extract familiares_data from the data
+            const { familiares_data, ...alumnoData } = studentData
 
             // Create the student first
             const { data: studentResult, error: studentError } = await supabase
@@ -190,9 +164,9 @@ class StudentService {
 
             const createdStudent = studentResult as Alumno
 
-            // If there are familiares to associate, create the relationships
-            if (familiares_ids && familiares_ids.length > 0) {
-                await this.associateFamiliaresToStudent(createdStudent.id_alumno, familiares_ids)
+            // If there are familiares to associate, create the relationships with parentesco
+            if (familiares_data && familiares_data.length > 0) {
+                await this.associateFamiliaresToStudentWithParentesco(createdStudent.id_alumno, familiares_data)
             }
 
             return createdStudent
@@ -202,7 +176,33 @@ class StudentService {
         }
     }
 
-    // Associate multiple familiares to a student
+    // Associate multiple familiares to a student with parentesco information
+    async associateFamiliaresToStudentWithParentesco(
+        id_alumno: number,
+        familiares_data: Array<{ id_familiar: number; parentesco_familiar: string }>
+    ): Promise<void> {
+        try {
+            // Create entries in the alumnoxfamiliar table with parentesco
+            const relationshipData = familiares_data.map(familiar => ({
+                id_alumno,
+                id_familiar: familiar.id_familiar,
+                parentesco_familiar: familiar.parentesco_familiar
+            }))
+
+            const { error } = await supabase
+                .from('alumnoxfamiliar')
+                .insert(relationshipData)
+
+            if (error) {
+                throw new Error(`Error associating familiares to student: ${error.message}`)
+            }
+        } catch (error) {
+            console.error('Error in associateFamiliaresToStudentWithParentesco:', error)
+            throw error
+        }
+    }
+
+    // Associate multiple familiares to a student (legacy method)
     async associateFamiliaresToStudent(id_alumno: number, familiares_ids: number[]): Promise<void> {
         try {
             // Create entries in the alumnoxfamiliar table
@@ -250,7 +250,7 @@ class StudentService {
     // Update an existing student with familiares
     async updateStudent(studentData: UpdateAlumnoData): Promise<Alumno> {
         try {
-            const { id_alumno, familiares_ids, ...updateData } = studentData
+            const { id_alumno, familiares_data, ...updateData } = studentData
 
             // Update the student basic information
             const { data, error } = await supabase
@@ -264,14 +264,14 @@ class StudentService {
                 throw new Error(`Error updating student: ${error.message}`)
             }
 
-            // If familiares_ids are provided, update the relationships
-            if (familiares_ids !== undefined) {
+            // If familiares_data are provided, update the relationships
+            if (familiares_data !== undefined) {
                 // Remove all existing relationships
                 await this.removeFamiliaresFromStudent(id_alumno)
 
-                // Add new relationships
-                if (familiares_ids.length > 0) {
-                    await this.associateFamiliaresToStudent(id_alumno, familiares_ids)
+                // Add new relationships with parentesco information
+                if (familiares_data.length > 0) {
+                    await this.associateFamiliaresToStudentWithParentesco(id_alumno, familiares_data)
                 }
             }
 

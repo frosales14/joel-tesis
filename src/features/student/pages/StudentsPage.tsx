@@ -311,7 +311,7 @@ export default function StudentsPage() {
                                     <TableHead>Grado</TableHead>
                                     <TableHead>Situación Actual</TableHead>
                                     <TableHead>Fecha Ingreso</TableHead>
-                                    <TableHead>Familiar Principal</TableHead>
+                                    <TableHead>Familiares</TableHead>
                                     <TableHead className="text-right">Acciones</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -373,19 +373,33 @@ export default function StudentsPage() {
                                             {formatDate(student.fecha_ingreso)}
                                         </TableCell>
                                         <TableCell>
-                                            {student.familiar ? (
+                                            {student.familiares && student.familiares.length > 0 ? (
                                                 <div className="text-sm">
-                                                    <div className="font-medium text-gentle-slate-gray">
-                                                        {student.familiar.nombre_familiar}
-                                                    </div>
-                                                    {student.familiar.parentesco_familiar && (
-                                                        <div className="text-xs text-muted-tan-600">
-                                                            {student.familiar.parentesco_familiar}
+                                                    {student.familiares.slice(0, 2).map((familiarRel) => {
+                                                        const familiar = familiarRel.familiar;
+                                                        if (!familiar) return null;
+
+                                                        return (
+                                                            <div key={familiar.id_familiar} className="mb-1 last:mb-0">
+                                                                <div className="font-medium text-gentle-slate-gray">
+                                                                    {familiar.nombre_familiar}
+                                                                </div>
+                                                                {familiarRel.parentesco_familiar && (
+                                                                    <div className="text-xs text-muted-tan-600">
+                                                                        {familiarRel.parentesco_familiar}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        );
+                                                    })}
+                                                    {student.familiares.length > 2 && (
+                                                        <div className="text-xs text-muted-tan-600 mt-1">
+                                                            +{student.familiares.length - 2} más
                                                         </div>
                                                     )}
                                                 </div>
                                             ) : (
-                                                <span className="text-muted-tan-600 text-sm">Sin familiar asignado</span>
+                                                <span className="text-muted-tan-600 text-sm">Sin familiares asignados</span>
                                             )}
                                         </TableCell>
                                         <TableCell className="text-right">

@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
@@ -22,7 +22,6 @@ import type { CreateFamiliarData, Gasto } from "../types"
 const createFamiliarSchema = z.object({
     nombre_familiar: z.string().min(2, "El nombre debe tener al menos 2 caracteres").max(100, "El nombre es demasiado largo"),
     edad_familiar: z.number().min(1, "La edad debe ser mayor a 0").max(120, "La edad debe ser menor a 120").optional(),
-    parentesco_familiar: z.string().max(50, "El parentesco es demasiado largo").optional(),
 })
 
 // Schema for creating new gastos
@@ -34,17 +33,8 @@ const createGastoSchema = z.object({
 type CreateFamiliarFormData = z.infer<typeof createFamiliarSchema>
 type CreateGastoFormData = z.infer<typeof createGastoSchema>
 
-// Common relationships for dropdown
-const commonRelationships = [
-    "Madre",
-    "Padre",
-    "Hermano/a",
-    "Abuelo/a",
-    "Tío/a",
-    "Primo/a",
-    "Tutor/a Legal",
-    "Otro"
-]
+// Note: Parentesco is now handled in the AlumnoXFamiliar junction table
+// when associating families with students, not during family creation
 
 export default function CreateFamiliar() {
     const navigate = useNavigate()
@@ -71,7 +61,6 @@ export default function CreateFamiliar() {
         defaultValues: {
             nombre_familiar: "",
             edad_familiar: undefined,
-            parentesco_familiar: "",
         },
     })
 
@@ -104,7 +93,6 @@ export default function CreateFamiliar() {
             familiarForm.reset({
                 nombre_familiar: familiar.nombre_familiar,
                 edad_familiar: familiar.edad_familiar,
-                parentesco_familiar: familiar.parentesco_familiar,
             })
 
             // Set income
@@ -152,7 +140,6 @@ export default function CreateFamiliar() {
 
             const submitData: CreateFamiliarData = {
                 ...data,
-                parentesco_familiar: data.parentesco_familiar?.trim() || undefined,
             }
 
             let familiar
@@ -318,34 +305,13 @@ export default function CreateFamiliar() {
                             )}
                         />
 
-                        {/* Relationship */}
-                        <FormField
-                            control={familiarForm.control}
-                            name="parentesco_familiar"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Parentesco</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                        <FormControl>
-                                            <SelectTrigger className="bg-white border-muted-tan-300">
-                                                <SelectValue placeholder="Seleccionar parentesco" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            {commonRelationships.map((relationship) => (
-                                                <SelectItem key={relationship} value={relationship}>
-                                                    {relationship}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <FormDescription>
-                                        Relación familiar con el estudiante
-                                    </FormDescription>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                        {/* Note: Parentesco field removed - now handled when associating with students */}
+                        <div className="p-4 bg-muted-tan-50 border border-muted-tan-200 rounded-lg">
+                            <p className="text-sm text-muted-tan-700">
+                                <strong>Nota:</strong> El parentesco (relación familiar) se especificará cuando
+                                se asocie este familiar con un estudiante específico.
+                            </p>
+                        </div>
                     </CardContent>
                 </Card>
 

@@ -194,40 +194,51 @@ const StudentReportDocument: React.FC<{ student: AlumnoWithFamiliar }> = ({ stud
                         </Text>
                     </View>
 
-                    {student.familiar ? (
-                        <>
-                            <View style={styles.row}>
-                                <Text style={styles.label}>Familiar Principal:</Text>
-                                <Text style={styles.value}>{student.familiar.nombre_familiar}</Text>
-                            </View>
+                    {student.familiares && student.familiares.length > 0 ? (
+                        student.familiares.map((familiarRel, index) => {
+                            const familiar = familiarRel.familiar;
+                            if (!familiar) return null;
 
-                            {student.familiar.parentesco_familiar && (
-                                <View style={styles.row}>
-                                    <Text style={styles.label}>Parentesco:</Text>
-                                    <Text style={styles.value}>{student.familiar.parentesco_familiar}</Text>
-                                </View>
-                            )}
-
-                            {student.familiar.edad_familiar && (
-                                <View style={styles.row}>
-                                    <Text style={styles.label}>Edad del Familiar:</Text>
-                                    <Text style={styles.value}>{student.familiar.edad_familiar} años</Text>
-                                </View>
-                            )}
-
-                            {student.familiar.ingreso_familiar && (
-                                <View style={styles.row}>
-                                    <Text style={styles.label}>Ingreso Familiar:</Text>
-                                    <Text style={styles.value}>
-                                        L{student.familiar.ingreso_familiar.toLocaleString('es-ES')}
+                            return (
+                                <View key={familiar.id_familiar} style={styles.section}>
+                                    <Text style={{ ...styles.sectionTitle, fontSize: 14, marginBottom: 8 }}>
+                                        Familiar {index + 1}
                                     </Text>
+
+                                    <View style={styles.row}>
+                                        <Text style={styles.label}>Nombre:</Text>
+                                        <Text style={styles.value}>{familiar.nombre_familiar}</Text>
+                                    </View>
+
+                                    {familiarRel.parentesco_familiar && (
+                                        <View style={styles.row}>
+                                            <Text style={styles.label}>Parentesco:</Text>
+                                            <Text style={styles.value}>{familiarRel.parentesco_familiar}</Text>
+                                        </View>
+                                    )}
+
+                                    {familiar.edad_familiar && (
+                                        <View style={styles.row}>
+                                            <Text style={styles.label}>Edad:</Text>
+                                            <Text style={styles.value}>{familiar.edad_familiar} años</Text>
+                                        </View>
+                                    )}
+
+                                    {familiar.ingreso_familiar && (
+                                        <View style={styles.row}>
+                                            <Text style={styles.label}>Ingreso Mensual:</Text>
+                                            <Text style={styles.value}>
+                                                L{familiar.ingreso_familiar.toLocaleString('es-ES')}
+                                            </Text>
+                                        </View>
+                                    )}
                                 </View>
-                            )}
-                        </>
+                            );
+                        })
                     ) : (
                         <View style={styles.row}>
-                            <Text style={styles.label}>Familiar Principal:</Text>
-                            <Text style={styles.noData}>Sin familiar asignado</Text>
+                            <Text style={styles.label}>Familiares:</Text>
+                            <Text style={styles.noData}>Sin familiares asignados</Text>
                         </View>
                     )}
                 </View>

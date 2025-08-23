@@ -25,6 +25,11 @@ import type { CreateAlumnoData } from "../types"
 import { FamiliarDataTable, type Familiar } from "../../familiares"
 import { cn } from "@/lib/utils"
 
+// Extended Familiar interface for student creation form - includes parentesco for UI purposes
+interface FamiliarWithParentesco extends Familiar {
+    parentesco_familiar?: string; // For display and selection in student creation
+}
+
 // Form validation schema
 const createStudentSchema = z.object({
     nombre_alumno: z.string().min(2, "El nombre debe tener al menos 2 caracteres").max(100, "El nombre es demasiado largo"),
@@ -35,7 +40,6 @@ const createStudentSchema = z.object({
     motivo_ingreso: z.string().max(500, "El motivo es demasiado largo").optional(),
     situacion_familiar: z.string().max(500, "La descripción es demasiado larga").optional(),
     situacion_actual: z.string().max(500, "La situación actual es demasiado larga").optional(),
-    id_familiar: z.number().optional(), // Keep for backwards compatibility
 })
 
 type CreateStudentFormData = z.infer<typeof createStudentSchema>
@@ -48,8 +52,8 @@ export default function CreateStudent() {
 
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [error, setError] = useState<string | null>(null)
-    const [familiares, setFamiliares] = useState<Familiar[]>([])
-    const [selectedFamiliares, setSelectedFamiliares] = useState<Familiar[]>([])
+    const [familiares, setFamiliares] = useState<FamiliarWithParentesco[]>([])
+    const [selectedFamiliares, setSelectedFamiliares] = useState<FamiliarWithParentesco[]>([])
     const [loadingFamiliares, setLoadingFamiliares] = useState(true)
     const [loadingStudent, setLoadingStudent] = useState(isEditMode)
 
@@ -64,7 +68,6 @@ export default function CreateStudent() {
             motivo_ingreso: "",
             situacion_familiar: "",
             situacion_actual: "",
-            id_familiar: undefined,
         },
     })
 
@@ -92,15 +95,18 @@ export default function CreateStudent() {
                 motivo_ingreso: student.motivo_ingreso || "",
                 situacion_familiar: student.situacion_familiar || "",
                 situacion_actual: student.situacion_actual || "",
-                id_familiar: student.id_familiar,
             })
 
             // Set selected familiares (from alumnoxfamiliar relationships)
             if (student.familiares && student.familiares.length > 0) {
-                setSelectedFamiliares(student.familiares)
-            } else if (student.familiar) {
-                // Fallback to primary familiar if no relationships found
-                setSelectedFamiliares([student.familiar])
+                // Convert AlumnoXFamiliar relationships to Familiar objects with parentesco
+                const familiaresWithParentesco = student.familiares
+                    .filter(rel => rel.familiar) // Only include relationships with valid familiar data
+                    .map(rel => ({
+                        ...rel.familiar!,
+                        parentesco_familiar: rel.parentesco_familiar || 'No especificado'
+                    }));
+                setSelectedFamiliares(familiaresWithParentesco)
             }
 
         } catch (err) {
@@ -115,7 +121,12 @@ export default function CreateStudent() {
         try {
             setLoadingFamiliares(true)
             const familiaresData = await studentService.getAllFamiliares()
-            setFamiliares(familiaresData)
+            // Convert to FamiliarWithParentesco - initialize with empty parentesco for new selections
+            const familiaresWithParentesco: FamiliarWithParentesco[] = familiaresData.map(familiar => ({
+                ...familiar,
+                parentesco_familiar: 'No especificado' // Default for new selections
+            }))
+            setFamiliares(familiaresWithParentesco)
         } catch (err) {
             console.error("Error loading familiares:", err)
             setError("Error al cargar la lista de familiares")
@@ -143,15 +154,23 @@ export default function CreateStudent() {
                 return
             }
 
+            // Validate that all selected familiares have a specified parentesco
+            const familiaresWithoutParentesco = selectedFamiliares.filter(f => !f.parentesco_familiar || f.parentesco_familiar === 'No especificado')
+            if (familiaresWithoutParentesco.length > 0) {
+                setError(`Debe especificar el parentesco para: ${familiaresWithoutParentesco.map(f => f.nombre_familiar).join(', ')}`)
+                return
+            }
+
             // Convert dates to ISO strings for Supabase
             const submitData: CreateAlumnoData = {
                 ...data,
                 fecha_nacimiento: data.fecha_nacimiento?.toISOString().split('T')[0],
                 fecha_ingreso: data.fecha_ingreso?.toISOString().split('T')[0],
-                // Set the first selected familiar as the primary familiar for backwards compatibility
-                id_familiar: selectedFamiliares[0]?.id_familiar,
-                // Pass all selected familiares IDs for the many-to-many relationship
-                familiares_ids: selectedFamiliares.map(f => f.id_familiar),
+                // Pass all selected familiares with their parentesco info for the many-to-many relationship
+                familiares_data: selectedFamiliares.map(f => ({
+                    id_familiar: f.id_familiar,
+                    parentesco_familiar: f.parentesco_familiar || 'No especificado'
+                })),
             }
 
             if (isEditMode && studentId) {
@@ -469,9 +488,9 @@ export default function CreateStudent() {
                                     </p>
 
                                     <FamiliarDataTable
-                                        familiares={familiares}
-                                        selectedFamiliares={selectedFamiliares}
-                                        onSelectionChange={setSelectedFamiliares}
+                                        familiares={familiares as Familiar[]}
+                                        selectedFamiliares={selectedFamiliares as Familiar[]}
+                                        onSelectionChange={(selected) => setSelectedFamiliares(selected as FamiliarWithParentesco[])}
                                         loading={loadingFamiliares}
                                     />
 
@@ -479,6 +498,56 @@ export default function CreateStudent() {
                                         <p className="text-sm text-red-600 mt-2">
                                             ⚠️ Debe seleccionar al menos un familiar responsable
                                         </p>
+                                    )}
+
+                                    {/* Parentesco specification for selected familiares */}
+                                    {selectedFamiliares.length > 0 && (
+                                        <div className="space-y-3 mt-4">
+                                            <Label className="text-sm font-medium text-gentle-slate-gray">
+                                                Especificar Parentesco
+                                            </Label>
+                                            <p className="text-sm text-muted-foreground">
+                                                Define la relación de cada familiar con el estudiante.
+                                            </p>
+                                            <div className="space-y-3">
+                                                {selectedFamiliares.map((familiar, index) => (
+                                                    <div key={familiar.id_familiar} className="flex items-center gap-3 p-3 bg-white border border-muted-tan-200 rounded-lg">
+                                                        <div className="flex-1">
+                                                            <div className="font-medium text-gentle-slate-gray">
+                                                                {familiar.nombre_familiar}
+                                                            </div>
+                                                            <div className="text-xs text-muted-foreground">
+                                                                {familiar.edad_familiar ? `${familiar.edad_familiar} años` : 'Edad no especificada'}
+                                                            </div>
+                                                        </div>
+                                                        <div className="w-48">
+                                                            <Select
+                                                                value={familiar.parentesco_familiar || ''}
+                                                                onValueChange={(value) => {
+                                                                    const updated = [...selectedFamiliares]
+                                                                    updated[index] = { ...familiar, parentesco_familiar: value }
+                                                                    setSelectedFamiliares(updated)
+                                                                }}
+                                                            >
+                                                                <SelectTrigger className="bg-white border-muted-tan-300">
+                                                                    <SelectValue placeholder="Seleccionar parentesco" />
+                                                                </SelectTrigger>
+                                                                <SelectContent>
+                                                                    <SelectItem value="Madre">Madre</SelectItem>
+                                                                    <SelectItem value="Padre">Padre</SelectItem>
+                                                                    <SelectItem value="Hermano/a">Hermano/a</SelectItem>
+                                                                    <SelectItem value="Abuelo/a">Abuelo/a</SelectItem>
+                                                                    <SelectItem value="Tío/a">Tío/a</SelectItem>
+                                                                    <SelectItem value="Primo/a">Primo/a</SelectItem>
+                                                                    <SelectItem value="Tutor/a Legal">Tutor/a Legal</SelectItem>
+                                                                    <SelectItem value="Otro">Otro</SelectItem>
+                                                                </SelectContent>
+                                                            </Select>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
                                     )}
                                 </div>
                             </CardContent>

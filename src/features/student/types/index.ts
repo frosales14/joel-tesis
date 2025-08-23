@@ -11,9 +11,8 @@ export interface Familiar {
     id_familiar: number;
     nombre_familiar: string;
     edad_familiar?: number;
-    parentesco_familiar?: string;
     ingreso_familiar?: number;
-    gastos?: Gasto[]; // NEW: One-to-many relationship with gastos
+    gastos?: Gasto[]; // One-to-many relationship with gastos
 }
 
 export interface Alumno {
@@ -26,22 +25,20 @@ export interface Alumno {
     motivo_ingreso?: string;
     situacion_familiar?: string;
     situacion_actual?: string;
-    id_familiar?: number;
-    familiar?: Familiar; // For joined queries
 }
 
 export interface AlumnoXFamiliar {
     id: number;
     id_alumno: number;
     id_familiar?: number;
+    parentesco_familiar?: string; // Relationship info moved here from familiar table
     alumno?: Alumno; // For joined queries
     familiar?: Familiar; // For joined queries
 }
 
 // Extended type for display purposes with joined data
 export interface AlumnoWithFamiliar extends Alumno {
-    familiar?: Familiar;
-    familiares?: Familiar[]; // Multiple family members via AlumnoXFamiliar
+    familiares?: AlumnoXFamiliar[]; // Multiple family members via AlumnoXFamiliar with relationship info
 }
 
 // Form types for creating/editing
@@ -54,8 +51,10 @@ export interface CreateAlumnoData {
     motivo_ingreso?: string;
     situacion_familiar?: string;
     situacion_actual?: string;
-    id_familiar?: number; // Keep for backwards compatibility (primary familiar)
-    familiares_ids?: number[]; // NEW: Array of familiar IDs for many-to-many relationship
+    familiares_data?: Array<{
+        id_familiar: number;
+        parentesco_familiar: string;
+    }>; // Array of familiar IDs with relationship info
 }
 
 export interface UpdateAlumnoData extends Partial<CreateAlumnoData> {
@@ -65,9 +64,7 @@ export interface UpdateAlumnoData extends Partial<CreateAlumnoData> {
 export interface CreateFamiliarData {
     nombre_familiar: string;
     edad_familiar?: number;
-    parentesco_familiar?: string;
     ingreso_familiar?: number;
-    id_gasto?: number;
 }
 
 export interface UpdateFamiliarData extends Partial<CreateFamiliarData> {
