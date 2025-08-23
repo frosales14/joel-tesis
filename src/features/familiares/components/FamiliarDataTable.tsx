@@ -110,18 +110,7 @@ export function FamiliarDataTable({
                 return <div>{edad ? `${edad} años` : "No especificada"}</div>
             },
         },
-        {
-            accessorKey: "parentesco_familiar",
-            header: "Parentesco",
-            cell: ({ row }) => {
-                const parentesco = row.getValue("parentesco_familiar") as string
-                return (
-                    <Badge variant="outline" className="bg-soft-blue-50 text-soft-blue-700">
-                        {parentesco || "No especificado"}
-                    </Badge>
-                )
-            },
-        },
+
         {
             accessorKey: "ingreso_familiar",
             header: "Ingresos",
@@ -246,10 +235,9 @@ export function FamiliarDataTable({
                                     >
                                         {column.id === "nombre_familiar" ? "Nombre" :
                                             column.id === "edad_familiar" ? "Edad" :
-                                                column.id === "parentesco_familiar" ? "Parentesco" :
-                                                    column.id === "ingreso_familiar" ? "Ingresos" :
-                                                        column.id === "gastos" ? "Gastos" :
-                                                            column.id}
+                                                column.id === "ingreso_familiar" ? "Ingresos" :
+                                                    column.id === "gastos" ? "Gastos" :
+                                                        column.id}
                                     </DropdownMenuCheckboxItem>
                                 )
                             })}

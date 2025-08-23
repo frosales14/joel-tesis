@@ -26,7 +26,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
+
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { familiaresService } from "../services/familiaresService"
 import type { FamiliarWithGastos, FamiliarFilters, FamiliarStats } from "../types"
@@ -104,42 +104,7 @@ export default function FamiliaresPage() {
         return () => clearTimeout(timeoutId)
     }, [searchTerm])
 
-    const getRelationshipBadge = (parentesco?: string) => {
-        if (!parentesco) {
-            return (
-                <Badge variant="secondary" className="bg-muted-tan-100 text-muted-tan-700">
-                    Sin especificar
-                </Badge>
-            )
-        }
 
-        const relationship = parentesco.toLowerCase()
-        if (relationship.includes('madre') || relationship.includes('mamá')) {
-            return (
-                <Badge className="bg-soft-coral-100 text-soft-coral-700 hover:bg-soft-coral-200">
-                    {parentesco}
-                </Badge>
-            )
-        } else if (relationship.includes('padre') || relationship.includes('papá')) {
-            return (
-                <Badge className="bg-soft-blue-100 text-soft-blue-700 hover:bg-soft-blue-200">
-                    {parentesco}
-                </Badge>
-            )
-        } else if (relationship.includes('abuel') || relationship.includes('tí') || relationship.includes('herman')) {
-            return (
-                <Badge className="bg-warm-peach-100 text-warm-peach-700 hover:bg-warm-peach-200">
-                    {parentesco}
-                </Badge>
-            )
-        } else {
-            return (
-                <Badge variant="outline" className="bg-muted-sage-green-50 text-muted-sage-green-700">
-                    {parentesco}
-                </Badge>
-            )
-        }
-    }
 
     const formatCurrency = (amount?: number) => {
         if (!amount) return 'No especificado'
@@ -269,7 +234,7 @@ export default function FamiliaresPage() {
                         <div className="flex-1 relative">
                             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gentle-slate-gray h-4 w-4" />
                             <Input
-                                placeholder="Buscar por nombre o parentesco..."
+                                placeholder="Buscar por nombre..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="pl-10"
@@ -302,7 +267,6 @@ export default function FamiliaresPage() {
                                 <TableRow>
                                     <TableHead className="w-[200px]">Nombre</TableHead>
                                     <TableHead>Edad</TableHead>
-                                    <TableHead>Parentesco</TableHead>
                                     <TableHead>Ingresos</TableHead>
                                     <TableHead>Gastos</TableHead>
                                     <TableHead className="text-right">Acciones</TableHead>
@@ -311,7 +275,7 @@ export default function FamiliaresPage() {
                             <TableBody>
                                 {error && (
                                     <TableRow>
-                                        <TableCell colSpan={6} className="text-center py-8">
+                                        <TableCell colSpan={5} className="text-center py-8">
                                             <div className="text-soft-coral-600">
                                                 <p className="font-medium">Error al cargar los familiares</p>
                                                 <p className="text-sm text-gentle-slate-gray mt-1">{error}</p>
@@ -330,7 +294,7 @@ export default function FamiliaresPage() {
 
                                 {loading && !error && (
                                     <TableRow>
-                                        <TableCell colSpan={6} className="text-center py-8">
+                                        <TableCell colSpan={5} className="text-center py-8">
                                             <div className="flex items-center justify-center space-x-2">
                                                 <Loader2 className="h-4 w-4 animate-spin" />
                                                 <span className="text-gentle-slate-gray">Cargando familiares...</span>
@@ -353,9 +317,6 @@ export default function FamiliaresPage() {
                                         </TableCell>
                                         <TableCell>
                                             {familiar.edad_familiar ? `${familiar.edad_familiar} años` : 'No especificada'}
-                                        </TableCell>
-                                        <TableCell>
-                                            {getRelationshipBadge(familiar.parentesco_familiar)}
                                         </TableCell>
                                         <TableCell>
                                             <span className={`font-medium ${familiar.ingreso_familiar && familiar.ingreso_familiar > 0

@@ -11,9 +11,8 @@ export interface Familiar {
     id_familiar: number;
     nombre_familiar: string;
     edad_familiar?: number;
-    parentesco_familiar?: string;
     ingreso_familiar?: number;
-    gastos?: Gasto[]; // NEW: One-to-many relationship with gastos
+    gastos?: Gasto[]; // One-to-many relationship with gastos
 }
 
 // Extended type for display purposes with joined data
@@ -29,7 +28,6 @@ export interface FamiliarWithGastos extends Familiar {
 export interface CreateFamiliarData {
     nombre_familiar: string;
     edad_familiar?: number;
-    parentesco_familiar?: string;
     ingreso_familiar?: number;
 }
 
@@ -50,7 +48,6 @@ export interface UpdateGastoData extends Partial<CreateGastoData> {
 // Filter and search types
 export interface FamiliarFilters {
     searchTerm?: string;
-    parentesco?: string;
     ingreso_min?: number;
     ingreso_max?: number;
     has_gasto?: boolean;
@@ -74,6 +71,5 @@ export interface FamiliarStats {
     recentFamiliares: Array<{
         id_familiar: number;
         nombre_familiar: string;
-        parentesco_familiar?: string;
     }>;
 }

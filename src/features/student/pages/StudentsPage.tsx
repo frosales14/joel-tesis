@@ -375,28 +375,8 @@ export default function StudentsPage() {
                                         <TableCell>
                                             {student.familiares && student.familiares.length > 0 ? (
                                                 <div className="text-sm">
-                                                    {student.familiares.slice(0, 2).map((familiarRel) => {
-                                                        const familiar = familiarRel.familiar;
-                                                        if (!familiar) return null;
+                                                    {student.familiares.length}
 
-                                                        return (
-                                                            <div key={familiar.id_familiar} className="mb-1 last:mb-0">
-                                                                <div className="font-medium text-gentle-slate-gray">
-                                                                    {familiar.nombre_familiar}
-                                                                </div>
-                                                                {familiarRel.parentesco_familiar && (
-                                                                    <div className="text-xs text-muted-tan-600">
-                                                                        {familiarRel.parentesco_familiar}
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        );
-                                                    })}
-                                                    {student.familiares.length > 2 && (
-                                                        <div className="text-xs text-muted-tan-600 mt-1">
-                                                            +{student.familiares.length - 2} más
-                                                        </div>
-                                                    )}
                                                 </div>
                                             ) : (
                                                 <span className="text-muted-tan-600 text-sm">Sin familiares asignados</span>

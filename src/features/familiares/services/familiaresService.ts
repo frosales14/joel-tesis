@@ -23,11 +23,7 @@ class FamiliaresService {
             // Helper function to apply filters to a query
             const applyFilters = (query: any) => {
                 if (filters.searchTerm) {
-                    query = query.or(`nombre_familiar.ilike.%${filters.searchTerm}%,parentesco_familiar.ilike.%${filters.searchTerm}%`)
-                }
-
-                if (filters.parentesco) {
-                    query = query.eq('parentesco_familiar', filters.parentesco)
+                    query = query.ilike('nombre_familiar', `%${filters.searchTerm}%`)
                 }
 
                 if (filters.ingreso_min !== undefined) {
@@ -335,16 +331,10 @@ class FamiliaresService {
                     .not('ingreso_familiar', 'is', null)
                     .gt('ingreso_familiar', 0),
 
-                // Unique relationships
-                supabase
-                    .from('familiar')
-                    .select('parentesco_familiar')
-                    .not('parentesco_familiar', 'is', null),
-
                 // Recent familiares (last 10)
                 supabase
                     .from('familiar')
-                    .select('id_familiar, nombre_familiar, parentesco_familiar')
+                    .select('id_familiar, nombre_familiar')
                     .order('id_familiar', { ascending: false })
                     .limit(10)
             ])
@@ -355,44 +345,16 @@ class FamiliaresService {
                 ? validIncomes.reduce((sum, item) => sum + (item.ingreso_familiar || 0), 0) / validIncomes.length
                 : 0
 
-            // Count unique relationships
-            const uniqueRelationships = new Set(
-                relationships?.map(r => r.parentesco_familiar?.toLowerCase().trim()).filter(Boolean)
-            ).size
-
             return {
                 totalFamiliares: totalFamiliares || 0,
                 withIncome: withIncome || 0,
                 withExpenses: withExpenses || 0,
                 averageIncome: Math.round(averageIncome),
-                uniqueRelationships,
+                uniqueRelationships: 0, // No longer tracking relationships at familiar level
                 recentFamiliares: recentFamiliares || []
             }
         } catch (error) {
             console.error('Error in getFamiliarStats:', error)
-            throw error
-        }
-    }
-
-    // Get relationships for filters/dropdowns
-    async getUniqueRelationships(): Promise<string[]> {
-        try {
-            const { data, error } = await supabase
-                .from('familiar')
-                .select('parentesco_familiar')
-                .not('parentesco_familiar', 'is', null)
-
-            if (error) {
-                throw new Error(`Error fetching relationships: ${error.message}`)
-            }
-
-            const relationships = [...new Set(
-                data?.map(item => item.parentesco_familiar?.trim()).filter(Boolean) || []
-            )].sort()
-
-            return relationships
-        } catch (error) {
-            console.error('Error in getUniqueRelationships:', error)
             throw error
         }
     }
