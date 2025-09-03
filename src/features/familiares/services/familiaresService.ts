@@ -304,7 +304,6 @@ class FamiliaresService {
                 { count: withIncome },
                 { count: withExpenses },
                 { data: incomeData },
-                { data: relationships },
                 { data: recentFamiliares }
             ] = await Promise.all([
                 // Total familiares

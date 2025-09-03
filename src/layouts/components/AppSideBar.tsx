@@ -1,4 +1,4 @@
-import { Users, LogOut, UserCheck } from "lucide-react"
+import { Users, LogOut, UserCheck, GraduationCap } from "lucide-react"
 import { Link, useLocation, useNavigate } from "react-router-dom"
 import {
     Sidebar,
@@ -28,6 +28,11 @@ const menuItems = [
         title: "Familiares",
         url: "/dashboard/familiares",
         icon: UserCheck,
+    },
+    {
+        title: "Grados",
+        url: "/dashboard/grados",
+        icon: GraduationCap,
     },
 ]
 

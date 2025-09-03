@@ -13,6 +13,7 @@ export default function DashboardLayout() {
         const path = location.pathname
         if (path.includes('alumnos')) return 'Alumnos'
         if (path.includes('familiares')) return 'Familiares'
+        if (path.includes('grados')) return 'Grados'
         if (path.includes('settings')) return 'Configuración'
         return 'Dashboard'
     }

@@ -6,6 +6,7 @@ import { FamiliaresPage, CreateFamiliar } from "./features/familiares"
 import { LoginPage } from "./features/auth"
 import { NotFound } from "./shared"
 import ProtectedRoute from "./components/ProtectedRoute"
+import GradosPage from "./features/grado/pages/GradosPage"
 
 export const appRouter = createBrowserRouter([
     // Public Auth Routes
@@ -40,6 +41,10 @@ export const appRouter = createBrowserRouter([
             {
                 path: 'familiares/crear',
                 element: <CreateFamiliar />,
+            },
+            {
+                path: 'grados',
+                element: <GradosPage />,
             },
         ]
     },
