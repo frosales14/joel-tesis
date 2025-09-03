@@ -3,10 +3,10 @@ import DashboardLayout from "./layouts/dashboard/DashboardLayout"
 import StudentsPage from "./features/student/pages/StudentsPage"
 import CreateStudent from "./features/student/pages/CreateStudent"
 import { FamiliaresPage, CreateFamiliar } from "./features/familiares"
+import { GradosPage, CreateGrado } from "./features/grado"
 import { LoginPage } from "./features/auth"
 import { NotFound } from "./shared"
 import ProtectedRoute from "./components/ProtectedRoute"
-import GradosPage from "./features/grado/pages/GradosPage"
 
 export const appRouter = createBrowserRouter([
     // Public Auth Routes
@@ -45,6 +45,10 @@ export const appRouter = createBrowserRouter([
             {
                 path: 'grados',
                 element: <GradosPage />,
+            },
+            {
+                path: 'grados/crear',
+                element: <CreateGrado />,
             },
         ]
     },
