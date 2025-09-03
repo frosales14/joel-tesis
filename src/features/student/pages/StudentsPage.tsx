@@ -139,11 +139,13 @@ export default function StudentsPage() {
         return new Date(dateString).toLocaleDateString('es-ES')
     }
 
-    const getGradeText = (grado?: number) => {
-        if (!grado) return 'No especificado'
-        if (grado <= 5) return `${grado}° Primaria`
-        if (grado <= 11) return `${grado}° Bachillerato`
-        return `Grado ${grado}`
+    const getGradeText = (student: AlumnoWithFamiliar) => {
+        // @ts-ignore - Supabase returns grado as joined object
+        if (student.grado?.nombre_grado) {
+            // @ts-ignore
+            return student.grado.nombre_grado
+        }
+        return 'No especificado'
     }
 
     const handleCreateStudent = () => {
@@ -363,7 +365,7 @@ export default function StudentsPage() {
                                         </TableCell>
                                         <TableCell>
                                             <Badge variant="outline" className="bg-muted-tan-50 text-muted-tan-700">
-                                                {getGradeText(student.grado_alumno)}
+                                                {getGradeText(student)}
                                             </Badge>
                                         </TableCell>
                                         <TableCell>

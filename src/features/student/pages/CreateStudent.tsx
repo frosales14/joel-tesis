@@ -35,7 +35,7 @@ const createStudentSchema = z.object({
     nombre_alumno: z.string().min(2, "El nombre debe tener al menos 2 caracteres").max(100, "El nombre es demasiado largo"),
     edad_alumno: z.number().min(1, "La edad debe ser mayor a 0").max(100, "La edad debe ser menor a 100").optional(),
     fecha_nacimiento: z.date().optional(),
-    grado_alumno: z.number().min(1, "El grado debe ser mayor a 0").max(15, "El grado debe ser menor a 15").optional(),
+    id_grado: z.number().min(1, "Debe seleccionar un grado").optional(),
     fecha_ingreso: z.date().optional(),
     motivo_ingreso: z.string().max(500, "El motivo es demasiado largo").optional(),
     situacion_familiar: z.string().max(500, "La descripción es demasiado larga").optional(),
@@ -54,7 +54,9 @@ export default function CreateStudent() {
     const [error, setError] = useState<string | null>(null)
     const [familiares, setFamiliares] = useState<FamiliarWithParentesco[]>([])
     const [selectedFamiliares, setSelectedFamiliares] = useState<FamiliarWithParentesco[]>([])
+    const [grados, setGrados] = useState<{ id_grado: number, nombre_grado: string }[]>([])
     const [loadingFamiliares, setLoadingFamiliares] = useState(true)
+    const [loadingGrados, setLoadingGrados] = useState(true)
     const [loadingStudent, setLoadingStudent] = useState(isEditMode)
 
     const form = useForm<CreateStudentFormData>({
@@ -63,7 +65,7 @@ export default function CreateStudent() {
             nombre_alumno: "",
             edad_alumno: undefined,
             fecha_nacimiento: undefined,
-            grado_alumno: undefined,
+            id_grado: undefined,
             fecha_ingreso: new Date(),
             motivo_ingreso: "",
             situacion_familiar: "",
@@ -90,7 +92,7 @@ export default function CreateStudent() {
                 nombre_alumno: student.nombre_alumno,
                 edad_alumno: student.edad_alumno,
                 fecha_nacimiento: student.fecha_nacimiento ? new Date(student.fecha_nacimiento) : undefined,
-                grado_alumno: student.grado_alumno,
+                id_grado: student.id_grado,
                 fecha_ingreso: student.fecha_ingreso ? new Date(student.fecha_ingreso) : undefined,
                 motivo_ingreso: student.motivo_ingreso || "",
                 situacion_familiar: student.situacion_familiar || "",
@@ -135,12 +137,27 @@ export default function CreateStudent() {
         }
     }
 
+    // Load grados for selection
+    const loadGrados = async () => {
+        try {
+            setLoadingGrados(true)
+            const gradosData = await studentService.getAllGrados()
+            setGrados(gradosData)
+        } catch (err) {
+            console.error("Error loading grados:", err)
+            setError("Error al cargar la lista de grados")
+        } finally {
+            setLoadingGrados(false)
+        }
+    }
+
     // Load data on component mount
     useEffect(() => {
         if (isEditMode) {
             loadStudentData()
         }
         loadFamiliares()
+        loadGrados()
     }, [studentId, isEditMode])
 
     const onSubmit = async (data: CreateStudentFormData) => {
@@ -369,30 +386,36 @@ export default function CreateStudent() {
                                 {/* Grade */}
                                 <FormField
                                     control={form.control}
-                                    name="grado_alumno"
+                                    name="id_grado"
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Grado Académico</FormLabel>
-                                            <Select onValueChange={(value) => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
+                                            <Select
+                                                onValueChange={(value) => field.onChange(parseInt(value))}
+                                                defaultValue={field.value?.toString()}
+                                                disabled={loadingGrados}
+                                            >
                                                 <FormControl>
                                                     <SelectTrigger className="bg-white border-muted-tan-300">
-                                                        <SelectValue placeholder="Seleccionar grado" />
+                                                        <SelectValue placeholder={loadingGrados ? "Cargando grados..." : "Seleccionar grado"} />
                                                     </SelectTrigger>
                                                 </FormControl>
                                                 <SelectContent>
-                                                    <SelectItem value="1">1° Primaria</SelectItem>
-                                                    <SelectItem value="2">2° Primaria</SelectItem>
-                                                    <SelectItem value="3">3° Primaria</SelectItem>
-                                                    <SelectItem value="4">4° Primaria</SelectItem>
-                                                    <SelectItem value="5">5° Primaria</SelectItem>
-                                                    <SelectItem value="6">6° Bachillerato</SelectItem>
-                                                    <SelectItem value="7">7° Bachillerato</SelectItem>
-                                                    <SelectItem value="8">8° Bachillerato</SelectItem>
-                                                    <SelectItem value="9">9° Bachillerato</SelectItem>
-                                                    <SelectItem value="10">10° Bachillerato</SelectItem>
-                                                    <SelectItem value="11">11° Bachillerato</SelectItem>
+                                                    {grados.map((grado) => (
+                                                        <SelectItem key={grado.id_grado} value={grado.id_grado.toString()}>
+                                                            {grado.nombre_grado}
+                                                        </SelectItem>
+                                                    ))}
+                                                    {grados.length === 0 && !loadingGrados && (
+                                                        <SelectItem value="" disabled>
+                                                            No hay grados disponibles
+                                                        </SelectItem>
+                                                    )}
                                                 </SelectContent>
                                             </Select>
+                                            <FormDescription>
+                                                {loadingGrados ? "Cargando grados disponibles..." : "Selecciona el grado académico del estudiante"}
+                                            </FormDescription>
                                             <FormMessage />
                                         </FormItem>
                                     )}

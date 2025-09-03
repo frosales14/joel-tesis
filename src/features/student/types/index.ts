@@ -20,7 +20,7 @@ export interface Alumno {
     nombre_alumno: string;
     edad_alumno?: number;
     fecha_nacimiento?: string; // ISO date string
-    grado_alumno?: number;
+    id_grado?: number; // Foreign key to grado table
     fecha_ingreso?: string; // ISO date string
     motivo_ingreso?: string;
     situacion_familiar?: string;
@@ -46,7 +46,7 @@ export interface CreateAlumnoData {
     nombre_alumno: string;
     edad_alumno?: number;
     fecha_nacimiento?: string;
-    grado_alumno?: number;
+    id_grado?: number; // Foreign key to grado table
     fecha_ingreso?: string;
     motivo_ingreso?: string;
     situacion_familiar?: string;
@@ -74,7 +74,7 @@ export interface UpdateFamiliarData extends Partial<CreateFamiliarData> {
 // Filter and search types
 export interface StudentFilters {
     searchTerm?: string;
-    grado?: number;
+    id_grado?: number; // Filter by grado foreign key
     situacion_actual?: string;
     edad_min?: number;
     edad_max?: number;

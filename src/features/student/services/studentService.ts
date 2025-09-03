@@ -25,8 +25,8 @@ class StudentService {
                     query = query.or(`nombre_alumno.ilike.%${filters.searchTerm}%,situacion_actual.ilike.%${filters.searchTerm}%`)
                 }
 
-                if (filters.grado) {
-                    query = query.eq('grado_alumno', filters.grado)
+                if (filters.id_grado) {
+                    query = query.eq('id_grado', filters.id_grado)
                 }
 
                 if (filters.situacion_actual) {
@@ -64,11 +64,15 @@ class StudentService {
                 throw new Error(`Error getting count: ${countError.message}`)
             }
 
-            // Get data with pagination - now query through junction table
+            // Get data with pagination - now query through junction table and include grado
             let dataQuery = supabase
                 .from('alumno')
                 .select(`
           *,
+          grado:id_grado (
+            id_grado,
+            nombre_grado
+          ),
           familiares:alumnoxfamiliar (
             id_familiar,
             parentesco_familiar,
@@ -111,6 +115,10 @@ class StudentService {
                 .from('alumno')
                 .select(`
                     *,
+                    grado:id_grado (
+                        id_grado,
+                        nombre_grado
+                    ),
                     familiares:alumnoxfamiliar (
                         id_familiar,
                         parentesco_familiar,
@@ -492,6 +500,25 @@ class StudentService {
             return data as Familiar[]
         } catch (error) {
             console.error('Error in getAllFamiliares:', error)
+            throw error
+        }
+    }
+
+    // Get all grados for dropdown selection
+    async getAllGrados() {
+        try {
+            const { data, error } = await supabase
+                .from('grado')
+                .select('id_grado, nombre_grado')
+                .order('nombre_grado')
+
+            if (error) {
+                throw new Error(`Error fetching grados: ${error.message}`)
+            }
+
+            return data || []
+        } catch (error) {
+            console.error('Error in getAllGrados:', error)
             throw error
         }
     }
