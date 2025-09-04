@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
-import { MoreHorizontal, Plus, Search, Loader2 } from "lucide-react"
+import { MoreHorizontal, Plus, Search, Loader2, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
     Card,
@@ -17,6 +17,14 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import {
     Table,
@@ -40,6 +48,11 @@ export default function FamiliaresPage() {
     const [error, setError] = useState<string | null>(null)
     const [totalFamiliares, setTotalFamiliares] = useState(0)
     const [successMessage, setSuccessMessage] = useState<string | null>(null)
+    const [deleteDialog, setDeleteDialog] = useState({
+        open: false,
+        familiar: null as FamiliarWithGastos | null,
+        isDeleting: false
+    })
 
 
     // Load familiares data
@@ -101,6 +114,38 @@ export default function FamiliaresPage() {
 
     const handleCreateFamiliar = () => {
         navigate('/dashboard/familiares/crear')
+    }
+
+    const handleDeleteFamiliar = (familiar: FamiliarWithGastos) => {
+        setDeleteDialog({
+            open: true,
+            familiar,
+            isDeleting: false
+        })
+    }
+
+    const confirmDeleteFamiliar = async () => {
+        if (!deleteDialog.familiar) return
+
+        try {
+            setDeleteDialog(prev => ({ ...prev, isDeleting: true }))
+            await familiaresService.deleteFamiliar(deleteDialog.familiar.id_familiar)
+            setSuccessMessage(`Familiar "${deleteDialog.familiar.nombre_familiar}" eliminado exitosamente`)
+            loadFamiliares() // Reload the list
+            // Auto-hide success message after 5 seconds
+            setTimeout(() => setSuccessMessage(null), 5000)
+            // Close dialog
+            setDeleteDialog({ open: false, familiar: null, isDeleting: false })
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Error al eliminar el familiar')
+            // Auto-hide error message after 5 seconds
+            setTimeout(() => setError(null), 5000)
+            setDeleteDialog(prev => ({ ...prev, isDeleting: false }))
+        }
+    }
+
+    const cancelDeleteFamiliar = () => {
+        setDeleteDialog({ open: false, familiar: null, isDeleting: false })
     }
 
     return (
@@ -282,7 +327,10 @@ export default function FamiliaresPage() {
                                                         Editar
                                                     </DropdownMenuItem>
                                                     <DropdownMenuSeparator />
-                                                    <DropdownMenuItem className="text-soft-coral">
+                                                    <DropdownMenuItem
+                                                        className="text-soft-coral cursor-pointer"
+                                                        onClick={() => handleDeleteFamiliar(familiar)}
+                                                    >
                                                         Eliminar
                                                     </DropdownMenuItem>
                                                 </DropdownMenuContent>
@@ -317,6 +365,63 @@ export default function FamiliaresPage() {
                     )}
                 </CardContent>
             </Card>
+
+            {/* Delete Confirmation Dialog */}
+            <Dialog open={deleteDialog.open} onOpenChange={(open) => {
+                if (!open && !deleteDialog.isDeleting) {
+                    cancelDeleteFamiliar()
+                }
+            }}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2 text-soft-coral">
+                            <Trash2 className="h-5 w-5" />
+                            Confirmar Eliminación
+                        </DialogTitle>
+                        <DialogDescription className="text-gentle-slate-gray">
+                            ¿Estás seguro de que quieres eliminar al familiar <strong>"{deleteDialog.familiar?.nombre_familiar}"</strong>?
+                            <br />
+                            <br />
+                            Esta acción eliminará:
+                            <ul className="list-disc list-inside mt-2 space-y-1">
+                                <li>Todos los gastos asociados</li>
+                                <li>Todas las relaciones con estudiantes</li>
+                                <li>Todos los datos del familiar</li>
+                            </ul>
+                            <br />
+                            <strong>Esta acción no se puede deshacer.</strong>
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="gap-2 sm:gap-0">
+                        <Button
+                            variant="outline"
+                            onClick={cancelDeleteFamiliar}
+                            disabled={deleteDialog.isDeleting}
+                            className="border-muted-tan-300 text-gentle-slate-gray hover:bg-muted-tan-50"
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={confirmDeleteFamiliar}
+                            disabled={deleteDialog.isDeleting}
+                            className="bg-red-600 hover:bg-red-700 text-white font-semibold shadow-md disabled:bg-red-400"
+                        >
+                            {deleteDialog.isDeleting ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    Eliminando...
+                                </>
+                            ) : (
+                                <>
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    Eliminar
+                                </>
+                            )}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

@@ -164,13 +164,34 @@ class FamiliaresService {
     // Delete a familiar
     async deleteFamiliar(id: number): Promise<void> {
         try {
-            const { error } = await supabase
+            // First, delete all gastos (expenses) for this familiar
+            const { error: gastosError } = await supabase
+                .from('gasto')
+                .delete()
+                .eq('id_familiar', id)
+
+            if (gastosError) {
+                throw new Error(`Error deleting familiar expenses: ${gastosError.message}`)
+            }
+
+            // Second, delete all student relationships for this familiar
+            const { error: relationshipError } = await supabase
+                .from('alumnoxfamiliar')
+                .delete()
+                .eq('id_familiar', id)
+
+            if (relationshipError) {
+                throw new Error(`Error deleting familiar relationships: ${relationshipError.message}`)
+            }
+
+            // Finally, delete the familiar record
+            const { error: familiarError } = await supabase
                 .from('familiar')
                 .delete()
                 .eq('id_familiar', id)
 
-            if (error) {
-                throw new Error(`Error deleting familiar: ${error.message}`)
+            if (familiarError) {
+                throw new Error(`Error deleting familiar: ${familiarError.message}`)
             }
         } catch (error) {
             console.error('Error in deleteFamiliar:', error)
