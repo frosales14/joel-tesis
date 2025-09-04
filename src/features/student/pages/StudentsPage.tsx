@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
-import { MoreHorizontal, Plus, Search, Loader2, FileText } from "lucide-react"
+import { MoreHorizontal, Plus, Search, Loader2, FileText, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
     Card,
@@ -17,6 +17,14 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import {
     Table,
@@ -46,6 +54,11 @@ export default function StudentsPage() {
         activeStudents: 0,
         recentStudents: 0,
         uniqueGrades: 0
+    })
+    const [deleteDialog, setDeleteDialog] = useState({
+        open: false,
+        student: null as AlumnoWithFamiliar | null,
+        isDeleting: false
     })
 
     // Load students data
@@ -166,6 +179,39 @@ export default function StudentsPage() {
         } finally {
             setLoading(false)
         }
+    }
+
+    const handleDeleteStudent = (student: AlumnoWithFamiliar) => {
+        setDeleteDialog({
+            open: true,
+            student,
+            isDeleting: false
+        })
+    }
+
+    const confirmDeleteStudent = async () => {
+        if (!deleteDialog.student) return
+
+        try {
+            setDeleteDialog(prev => ({ ...prev, isDeleting: true }))
+            await studentService.deleteStudent(deleteDialog.student.id_alumno)
+            setSuccessMessage(`Estudiante "${deleteDialog.student.nombre_alumno}" eliminado exitosamente`)
+            loadStudents() // Reload the list
+            loadStats() // Reload stats
+            // Auto-hide success message after 5 seconds
+            setTimeout(() => setSuccessMessage(null), 5000)
+            // Close dialog
+            setDeleteDialog({ open: false, student: null, isDeleting: false })
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Error al eliminar el estudiante')
+            // Auto-hide error message after 5 seconds
+            setTimeout(() => setError(null), 5000)
+            setDeleteDialog(prev => ({ ...prev, isDeleting: false }))
+        }
+    }
+
+    const cancelDeleteStudent = () => {
+        setDeleteDialog({ open: false, student: null, isDeleting: false })
     }
 
     return (
@@ -393,7 +439,10 @@ export default function StudentsPage() {
                                                         Editar
                                                     </DropdownMenuItem>
                                                     <DropdownMenuSeparator />
-                                                    <DropdownMenuItem className="text-soft-coral">
+                                                    <DropdownMenuItem
+                                                        className="text-soft-coral cursor-pointer"
+                                                        onClick={() => handleDeleteStudent(student)}
+                                                    >
                                                         Eliminar
                                                     </DropdownMenuItem>
                                                 </DropdownMenuContent>
@@ -428,6 +477,56 @@ export default function StudentsPage() {
                     )}
                 </CardContent>
             </Card>
+
+            {/* Delete Confirmation Dialog */}
+            <Dialog open={deleteDialog.open} onOpenChange={(open) => {
+                if (!open && !deleteDialog.isDeleting) {
+                    cancelDeleteStudent()
+                }
+            }}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2 text-soft-coral">
+                            <Trash2 className="h-5 w-5" />
+                            Confirmar Eliminación
+                        </DialogTitle>
+                        <DialogDescription className="text-gentle-slate-gray">
+                            ¿Estás seguro de que quieres eliminar al estudiante <strong>"{deleteDialog.student?.nombre_alumno}"</strong>?
+                            <br />
+                            <br />
+                            Esta acción no se puede deshacer y se eliminarán todos los datos asociados al estudiante.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="gap-2 sm:gap-0">
+                        <Button
+                            variant="outline"
+                            onClick={cancelDeleteStudent}
+                            disabled={deleteDialog.isDeleting}
+                            className="border-muted-tan-300 text-gentle-slate-gray hover:bg-muted-tan-50"
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={confirmDeleteStudent}
+                            disabled={deleteDialog.isDeleting}
+                            className="bg-red-600 hover:bg-red-700 text-white font-semibold shadow-md disabled:bg-red-400"
+                        >
+                            {deleteDialog.isDeleting ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    Eliminando...
+                                </>
+                            ) : (
+                                <>
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    Eliminar
+                                </>
+                            )}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

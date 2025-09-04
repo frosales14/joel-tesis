@@ -293,13 +293,24 @@ class StudentService {
     // Delete a student
     async deleteStudent(id: number): Promise<void> {
         try {
-            const { error } = await supabase
+            // First, delete all family relationships for this student
+            const { error: relationshipError } = await supabase
+                .from('alumnoxfamiliar')
+                .delete()
+                .eq('id_alumno', id)
+
+            if (relationshipError) {
+                throw new Error(`Error deleting student relationships: ${relationshipError.message}`)
+            }
+
+            // Then delete the student record
+            const { error: studentError } = await supabase
                 .from('alumno')
                 .delete()
                 .eq('id_alumno', id)
 
-            if (error) {
-                throw new Error(`Error deleting student: ${error.message}`)
+            if (studentError) {
+                throw new Error(`Error deleting student: ${studentError.message}`)
             }
         } catch (error) {
             console.error('Error in deleteStudent:', error)
