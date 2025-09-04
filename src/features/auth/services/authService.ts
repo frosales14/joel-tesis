@@ -50,7 +50,12 @@ class AuthService {
         })
 
         if (error) {
-            throw new Error(error.message)
+            // Translate common Supabase error messages to Spanish
+            let errorMessage = error.message
+            if (error.message === 'Invalid login credentials') {
+                errorMessage = 'credenciales invalidas'
+            }
+            throw new Error(errorMessage)
         }
 
         if (!data.user || !data.session) {

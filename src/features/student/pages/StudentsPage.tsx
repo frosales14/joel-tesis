@@ -207,7 +207,7 @@ export default function StudentsPage() {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Card className="bg-gradient-to-br from-soft-blue-50 to-soft-blue-100 border-soft-blue-200">
                     <CardHeader className="pb-2">
                         <CardTitle className="text-sm font-medium text-soft-blue-700">
@@ -236,19 +236,6 @@ export default function StudentsPage() {
                     </CardContent>
                 </Card>
 
-                <Card className="bg-gradient-to-br from-warm-peach-50 to-warm-peach-100 border-warm-peach-200">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-warm-peach-700">
-                            Nuevos este mes
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-warm-peach-700">
-                            {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : stats.recentStudents}
-                        </div>
-                        <p className="text-xs text-warm-peach-600">Ingresos recientes</p>
-                    </CardContent>
-                </Card>
 
                 <Card className="bg-gradient-to-br from-soft-coral-50 to-soft-coral-100 border-soft-coral-200">
                     <CardHeader className="pb-2">

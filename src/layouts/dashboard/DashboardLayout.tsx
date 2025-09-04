@@ -73,7 +73,7 @@ export default function DashboardLayout() {
                                     })}
                                 </p>
                                 <p className="text-xs text-muted-tan-600">
-                                    Bienvenido, {user?.name || 'Usuario'} ✨
+                                    Bienvenido, {user?.name || 'Usuario'}
                                 </p>
                             </div>
                         </div>

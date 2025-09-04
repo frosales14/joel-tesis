@@ -74,7 +74,7 @@ export function AppSidebar() {
                 {/* Main Navigation */}
                 <SidebarGroup>
                     <SidebarGroupLabel className="text-gentle-slate-gray font-semibold">
-                        Main Navigation
+                        Navegación
                     </SidebarGroupLabel>
                     <SidebarGroupContent>
                         <SidebarMenu>

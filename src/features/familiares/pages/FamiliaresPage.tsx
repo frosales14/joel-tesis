@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
-import { MoreHorizontal, Plus, Search, Loader2, Users, DollarSign, Receipt, TrendingUp } from "lucide-react"
+import { MoreHorizontal, Plus, Search, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
     Card,
@@ -29,7 +29,7 @@ import {
 
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { familiaresService } from "../services/familiaresService"
-import type { FamiliarWithGastos, FamiliarFilters, FamiliarStats } from "../types"
+import type { FamiliarWithGastos, FamiliarFilters } from "../types"
 
 export default function FamiliaresPage() {
     const navigate = useNavigate()
@@ -40,14 +40,7 @@ export default function FamiliaresPage() {
     const [error, setError] = useState<string | null>(null)
     const [totalFamiliares, setTotalFamiliares] = useState(0)
     const [successMessage, setSuccessMessage] = useState<string | null>(null)
-    const [stats, setStats] = useState<FamiliarStats>({
-        totalFamiliares: 0,
-        withIncome: 0,
-        withExpenses: 0,
-        averageIncome: 0,
-        uniqueRelationships: 0,
-        recentFamiliares: []
-    })
+
 
     // Load familiares data
     const loadFamiliares = async (filters: FamiliarFilters = {}, page: number = 1) => {
@@ -66,20 +59,11 @@ export default function FamiliaresPage() {
         }
     }
 
-    // Load dashboard stats
-    const loadStats = async () => {
-        try {
-            const dashboardStats = await familiaresService.getFamiliarStats()
-            setStats(dashboardStats)
-        } catch (err) {
-            console.error('Error loading stats:', err)
-        }
-    }
+
 
     // Load data on component mount and handle success messages
     useEffect(() => {
         loadFamiliares()
-        loadStats()
 
         // Check for success message from navigation state
         if (location.state?.message && location.state?.type === 'success') {
@@ -157,70 +141,7 @@ export default function FamiliaresPage() {
                 </Button>
             </div>
 
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <Card className="bg-gradient-to-br from-soft-blue-50 to-soft-blue-100 border-soft-blue-200">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-soft-blue-700 flex items-center">
-                            <Users className="h-4 w-4 mr-2" />
-                            Total Familiares
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-soft-blue">
-                            {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : stats.totalFamiliares}
-                        </div>
-                        <p className="text-xs text-soft-blue-600">Familiares registrados</p>
-                    </CardContent>
-                </Card>
 
-                <Card className="bg-gradient-to-br from-muted-sage-green-50 to-muted-sage-green-100 border-muted-sage-green-200">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-muted-sage-green-700 flex items-center">
-                            <DollarSign className="h-4 w-4 mr-2" />
-                            Con Ingresos
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-muted-sage-green">
-                            {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : stats.withIncome}
-                        </div>
-                        <p className="text-xs text-muted-sage-green-600">Familiares con ingresos</p>
-                    </CardContent>
-                </Card>
-
-                <Card className="bg-gradient-to-br from-warm-peach-50 to-warm-peach-100 border-warm-peach-200">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-warm-peach-700 flex items-center">
-                            <Receipt className="h-4 w-4 mr-2" />
-                            Con Gastos
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-warm-peach-700">
-                            {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : stats.withExpenses}
-                        </div>
-                        <p className="text-xs text-warm-peach-600">Con gastos asignados</p>
-                    </CardContent>
-                </Card>
-
-                <Card className="bg-gradient-to-br from-soft-coral-50 to-soft-coral-100 border-soft-coral-200">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-soft-coral-700 flex items-center">
-                            <TrendingUp className="h-4 w-4 mr-2" />
-                            Ingreso Promedio
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-xl font-bold text-soft-coral">
-                            {loading ? <Loader2 className="h-6 w-6 animate-spin" /> :
-                                stats.averageIncome > 0 ? formatCurrency(stats.averageIncome) : 'N/A'
-                            }
-                        </div>
-                        <p className="text-xs text-soft-coral-600">Ingreso promedio mensual</p>
-                    </CardContent>
-                </Card>
-            </div>
 
             {/* Filters and Search */}
             <Card>
@@ -355,7 +276,6 @@ export default function FamiliaresPage() {
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
                                                     <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                                                    <DropdownMenuItem>Generar Reporte</DropdownMenuItem>
                                                     <DropdownMenuItem
                                                         onClick={() => navigate(`/dashboard/familiares/crear?id=${familiar.id_familiar}`)}
                                                     >
