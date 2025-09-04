@@ -156,7 +156,7 @@ class GradosService {
         }
     }
 
-    // Delete a grado
+    // Delete a grado (safe - only if no students assigned)
     async deleteGrado(id: number): Promise<void> {
         try {
             // First check if there are any students in this grade
@@ -183,6 +183,34 @@ class GradosService {
             }
         } catch (error) {
             console.error('Error in deleteGrado:', error)
+            throw error
+        }
+    }
+
+    // Force delete a grado (removes grade from students first)
+    async forceDeleteGrado(id: number): Promise<void> {
+        try {
+            // First, remove the grade assignment from all students in this grade
+            const { error: updateError } = await supabase
+                .from('alumno')
+                .update({ id_grado: null })
+                .eq('id_grado', id)
+
+            if (updateError) {
+                throw new Error(`Error removing grade from students: ${updateError.message}`)
+            }
+
+            // Then delete the grado record
+            const { error: deleteError } = await supabase
+                .from('grado')
+                .delete()
+                .eq('id_grado', id)
+
+            if (deleteError) {
+                throw new Error(`Error deleting grado: ${deleteError.message}`)
+            }
+        } catch (error) {
+            console.error('Error in forceDeleteGrado:', error)
             throw error
         }
     }

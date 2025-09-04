@@ -117,7 +117,7 @@ export function AppSidebar() {
                             <div className="relative">
                                 <div className="absolute inset-0 bg-soft-blue-300 rounded-full blur-sm opacity-50"></div>
                                 <div className="relative h-10 w-10 bg-gradient-to-br from-soft-blue to-soft-blue-600 rounded-full flex items-center justify-center shadow-md">
-                                    <span className="text-white text-sm font-bold">
+                                    <span className="text-black text-sm font-bold">
                                         {user?.name?.charAt(0) || user?.email?.charAt(0) || 'U'}
                                     </span>
                                 </div>

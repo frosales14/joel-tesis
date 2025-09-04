@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
-import { MoreHorizontal, Plus, Search, Loader2, GraduationCap, Users, TrendingUp, BookOpen } from "lucide-react"
+import { MoreHorizontal, Plus, Search, Loader2, GraduationCap, Users, TrendingUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
     Card,
@@ -17,6 +17,14 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import {
     Table,
@@ -28,6 +36,7 @@ import {
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Checkbox } from "@/components/ui/checkbox"
 import { gradosService } from "../services/gradosService"
 import type { GradoWithAlumnos, GradoFilters, GradoStats } from "../types"
 
@@ -46,6 +55,12 @@ export default function GradosPage() {
         totalStudentsInGrados: 0,
         averageStudentsPerGrado: 0,
         recentGrados: []
+    })
+    const [deleteDialog, setDeleteDialog] = useState({
+        open: false,
+        grado: null as GradoWithAlumnos | null,
+        isDeleting: false,
+        forceDelete: false
     })
 
     // Load grados data
@@ -107,28 +122,49 @@ export default function GradosPage() {
         navigate('/dashboard/grados/crear')
     }
 
-    const handleDeleteGrado = async (grado: GradoWithAlumnos) => {
-        if (grado.total_alumnos && grado.total_alumnos > 0) {
-            setError(`No se puede eliminar el grado "${grado.nombre_grado}" porque tiene ${grado.total_alumnos} estudiante(s) asignado(s)`)
-            setTimeout(() => setError(null), 5000)
-            return
-        }
+    const handleDeleteGrado = (grado: GradoWithAlumnos) => {
+        setDeleteDialog({
+            open: true,
+            grado,
+            isDeleting: false,
+            forceDelete: false
+        })
+    }
 
-        if (window.confirm(`¿Estás seguro de que quieres eliminar el grado "${grado.nombre_grado}"?`)) {
-            try {
-                setLoading(true)
-                await gradosService.deleteGrado(grado.id_grado)
-                setSuccessMessage(`Grado "${grado.nombre_grado}" eliminado exitosamente`)
-                loadGrados()
-                loadStats()
-                setTimeout(() => setSuccessMessage(null), 5000)
-            } catch (err) {
-                setError(err instanceof Error ? err.message : 'Error al eliminar el grado')
-                setTimeout(() => setError(null), 5000)
-            } finally {
-                setLoading(false)
+    const confirmDeleteGrado = async () => {
+        if (!deleteDialog.grado) return
+
+        try {
+            setDeleteDialog(prev => ({ ...prev, isDeleting: true }))
+
+            if (deleteDialog.forceDelete) {
+                await gradosService.forceDeleteGrado(deleteDialog.grado.id_grado)
+                setSuccessMessage(`Grado "${deleteDialog.grado.nombre_grado}" eliminado exitosamente (estudiantes reasignados sin grado)`)
+            } else {
+                await gradosService.deleteGrado(deleteDialog.grado.id_grado)
+                setSuccessMessage(`Grado "${deleteDialog.grado.nombre_grado}" eliminado exitosamente`)
             }
+
+            loadGrados() // Reload the list
+            loadStats() // Reload stats
+            // Auto-hide success message after 5 seconds
+            setTimeout(() => setSuccessMessage(null), 5000)
+            // Close dialog
+            setDeleteDialog({ open: false, grado: null, isDeleting: false, forceDelete: false })
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Error al eliminar el grado')
+            // Auto-hide error message after 5 seconds
+            setTimeout(() => setError(null), 5000)
+            setDeleteDialog(prev => ({ ...prev, isDeleting: false }))
         }
+    }
+
+    const cancelDeleteGrado = () => {
+        setDeleteDialog({ open: false, grado: null, isDeleting: false, forceDelete: false })
+    }
+
+    const toggleForceDelete = () => {
+        setDeleteDialog(prev => ({ ...prev, forceDelete: !prev.forceDelete }))
     }
 
     return (
@@ -187,7 +223,7 @@ export default function GradosPage() {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Card className="bg-gradient-to-br from-soft-blue-50 to-soft-blue-100 border-soft-blue-200">
                     <CardHeader className="pb-2">
                         <CardTitle className="text-sm font-medium text-soft-blue-700 flex items-center">
@@ -233,24 +269,6 @@ export default function GradosPage() {
                     </CardContent>
                 </Card>
 
-                <Card className="bg-gradient-to-br from-soft-coral-50 to-soft-coral-100 border-soft-coral-200">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-soft-coral-700 flex items-center">
-                            <BookOpen className="h-4 w-4 mr-2" />
-                            Más Popular
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-lg font-bold text-soft-coral">
-                            {loading ? <Loader2 className="h-6 w-6 animate-spin" /> :
-                                stats.mostPopularGrado ? stats.mostPopularGrado.nombre_grado : 'N/A'
-                            }
-                        </div>
-                        <p className="text-xs text-soft-coral-600">
-                            {stats.mostPopularGrado ? `${stats.mostPopularGrado.student_count} estudiantes` : 'Sin datos'}
-                        </p>
-                    </CardContent>
-                </Card>
             </div>
 
             {/* Filters and Search */}
@@ -414,6 +432,80 @@ export default function GradosPage() {
                     )}
                 </CardContent>
             </Card>
+
+            {/* Delete Confirmation Dialog */}
+            <Dialog open={deleteDialog.open} onOpenChange={(open) => {
+                if (!open && !deleteDialog.isDeleting) {
+                    cancelDeleteGrado()
+                }
+            }}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2 text-soft-coral">
+                            <GraduationCap className="h-5 w-5" />
+                            Confirmar Eliminación
+                        </DialogTitle>
+                        <DialogDescription className="text-gentle-slate-gray">
+                            ¿Estás seguro de que quieres eliminar el grado <strong>"{deleteDialog.grado?.nombre_grado}"</strong>?
+                            <br />
+                            <br />
+                            {deleteDialog.grado?.total_alumnos && deleteDialog.grado.total_alumnos > 0 ? (
+                                <>
+                                    <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 my-3">
+                                        <p className="text-yellow-800 font-medium">
+                                            ⚠️ Este grado tiene {deleteDialog.grado.total_alumnos} estudiante(s) asignado(s).
+                                        </p>
+                                    </div>
+                                    <div className="flex items-start space-x-3 mt-3 p-3 bg-red-50 border border-red-200 rounded-md">
+                                        <Checkbox
+                                            id="force-delete"
+                                            checked={deleteDialog.forceDelete}
+                                            onCheckedChange={toggleForceDelete}
+                                            className="mt-0.5 border-2 border-red-400 data-[state=checked]:bg-red-600 data-[state=checked]:border-red-600 focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                                        />
+                                        <label
+                                            htmlFor="force-delete"
+                                            className="text-sm text-red-800 cursor-pointer font-medium leading-relaxed"
+                                        >
+                                            Eliminar de todos modos (los estudiantes quedarán sin grado asignado)
+                                        </label>
+                                    </div>
+                                </>
+                            ) : (
+                                <p>Esta acción no se puede deshacer.</p>
+                            )}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="gap-2 sm:gap-0">
+                        <Button
+                            variant="outline"
+                            onClick={cancelDeleteGrado}
+                            disabled={deleteDialog.isDeleting}
+                            className="border-muted-tan-300 text-gentle-slate-gray hover:bg-muted-tan-50"
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={confirmDeleteGrado}
+                            disabled={deleteDialog.isDeleting || (deleteDialog.grado?.total_alumnos && deleteDialog.grado.total_alumnos > 0 && !deleteDialog.forceDelete)}
+                            className="bg-red-600 hover:bg-red-700 text-white font-semibold shadow-md disabled:bg-red-400"
+                        >
+                            {deleteDialog.isDeleting ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    Eliminando...
+                                </>
+                            ) : (
+                                <>
+                                    <GraduationCap className="h-4 w-4 mr-2" />
+                                    {deleteDialog.forceDelete ? 'Forzar Eliminación' : 'Eliminar'}
+                                </>
+                            )}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }
